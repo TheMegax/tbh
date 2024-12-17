@@ -1,0 +1,15 @@
+{
+  "command.send.description": "Send something!",
+  "command.send.message.description" : "Sends an anonymous message to an user.",
+  "command.send.message.to": "Send to who? (Must be in the member list)",
+  "command.send.message.msg": "Message to send.",
+  "command.link.description": "Let people know your askbox is open",
+  "command.link.title": "A custom title for your ask",
+  "error.title": "Error!",
+  "error.generic": "Error!\n{0}",
+  "error.no_app": "The user doesn't have tbh added as an app.\nTell them to add it!\nApp link: https://discord.com/oauth2/authorize?client_id=1315828152785698869",
+  "error.unknown": "I'm not entirely sure what I did wrong, but I clearly did something wrong :[",
+  "success.title": "Success!",
+  "success.sent": "Sent anonymous message to {0}!",
+  "embed.link.title": "{0} made a new ask!"
+}
