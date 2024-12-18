@@ -118,7 +118,7 @@ async def update_db_column(table_name: str, row_id: int, data_name: str, column:
             conn.commit()
             return True
     except sqlite3.Error as e:
-        print(f"Could not update {table_name} column {column} in {row_id}!\n{e}")
+        utils.formatlog(f"Could not update {table_name} column {column} in {row_id}!\n{e}")
     return False
 
 
@@ -130,4 +130,4 @@ async def initialize_database() -> None:
             cursor.execute(create_user_table)
             conn.commit()
     except sqlite3.Error as e:
-        print(e)
+        utils.formatlog(str(e))

@@ -9,6 +9,8 @@
   "command.asks.enable.description": "Enable your asks.",
   "command.asks.disable.description": "Disable your asks.",
   "command.asks.clear.description": "Delete ALL your asks!",
+  "command.tbh.description": "TBH commands",
+  "command.tbh.help": "How to use TBH.",
   "error.title": "Error!",
   "error.generic": "Error!\n{0}",
   "error.asks_closed": "{0} doesn't have asks enabled at this moment.",

@@ -26,16 +26,17 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 # TODO(s)
-#  Speed up image generation (so long!)
-#  /tbh help
-
+#  Markdown for text
+#  Link website? So you don't need to use the discord app
 
 # Initialize bot object
 bot: Bot = discord.Bot()
 send_group = bot.create_group(name="send", description=utils.localize("command.send.description"))
 asks_group = bot.create_group(name="asks", description=utils.localize("command.asks.description"))
+tbh_group = bot.create_group(name="tbh", description=utils.localize("command.tbh.description"))
 send_group.integration_types = {IntegrationType.user_install}
 asks_group.integration_types = {IntegrationType.user_install}
+tbh_group.integration_types = {IntegrationType.user_install}
 
 
 @asks_group.command(description=utils.localize("command.asks.enable.description"))
