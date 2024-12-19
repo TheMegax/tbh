@@ -19,14 +19,16 @@ from PIL import Image
 
 import utils
 
-hti = Html2Image()
-hti.browser.disable_logging = True
-
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN: str = os.getenv('DISCORD_TOKEN')
+BROWSER: str = os.getenv('BROWSER', 'chrome')
+BROWSER_LOCATION: str = os.getenv('BROWSER_LOCATION')
+
+hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
 
 # TODO(s)
 #  Markdown for text
+#  Customizable title gradient colors
 #  Link website? So you don't need to use the discord app
 
 # Initialize bot object
