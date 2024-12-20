@@ -89,7 +89,7 @@ async def clear(ctx: Context) -> None:
 async def link(ctx: Context,
                title: Option(str, input_type=Type[str],
                              description=utils.localize("command.link.title"),
-                             default=utils.localize("template.default_ask"),
+                             required=False,
                              max_length=50
                              )
                ) -> None:
@@ -184,6 +184,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 
 @bot.event
 async def on_ready() -> None:
+    print("BOT STARTED")
     utils.formatlog(f'{bot.user} has connected to Discord!')
     await dbconnection.initialize_database()
 
