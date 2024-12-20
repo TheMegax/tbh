@@ -28,6 +28,7 @@ if USE_HTML_JSON_SERVICE:
     import requests
 else:
     from html2image import Html2Image
+
     hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
 
 # TODO(s)
@@ -43,6 +44,12 @@ tbh_group = bot.create_group(name="tbh", description=utils.localize("command.tbh
 send_group.integration_types = {IntegrationType.user_install}
 asks_group.integration_types = {IntegrationType.user_install}
 tbh_group.integration_types = {IntegrationType.user_install}
+
+
+@tbh_group.command(description=utils.localize("command.tbh.help"))
+async def help(ctx: Context) -> None:
+    await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.tbh.help.title"),
+                                                  description=utils.localize("embed.tbh.help.description")))
 
 
 @asks_group.command(description=utils.localize("command.asks.enable.description"))
@@ -96,7 +103,10 @@ async def link(ctx: Context,
     await ctx.defer()
     user = await dbconnection.get_or_create_user(ctx.user.id)
     await dbconnection.update_db_column("users", user.user_id, "user_id", "are_asks_open", 1)
-    await dbconnection.update_db_column("users", user.user_id, "user_id", "ask_title", title)
+    if title is None:
+        title = user.ask_title
+    else:
+        await dbconnection.update_db_column("users", user.user_id, "user_id", "ask_title", title)
     utils.formatlog("Generating link {0}...".format(str(ctx.interaction.id)))
     img_name = generate_link_image(ask_title=title, img_id=ctx.interaction.id)
     embed = Embed(title=utils.localize("embed.link.title").format(ctx.user.display_name),
