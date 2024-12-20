@@ -1,7 +1,6 @@
 import os.path
 import pathlib
 from typing import Type
-from string import Template
 
 import discord
 
@@ -12,23 +11,11 @@ from discord.ext.commands import dm_only, PrivateMessageOnly
 from dotenv import load_dotenv
 
 import dbconnection
-import html
-from PIL import Image
 
 import utils
 
 load_dotenv()
 TOKEN: str = os.getenv('DISCORD_TOKEN')
-BROWSER: str = os.getenv('BROWSER', 'chrome')
-BROWSER_LOCATION: str = os.getenv('BROWSER_LOCATION')
-USE_HTML_JSON_SERVICE: bool = bool(int(os.getenv('USE_HTML_JSON_SERVICE', "0")))
-SERVICE_PORT: str = os.getenv('SERVICE_PORT')
-
-if USE_HTML_JSON_SERVICE:
-    import requests
-else:
-    from html2image import Html2Image
-    hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
 
 # TODO(s)
 #  Markdown for text
@@ -48,7 +35,7 @@ tbh_group.integration_types = {IntegrationType.user_install}
 @tbh_group.command(description=utils.localize("command.tbh.help"))
 async def help(ctx: Context) -> None:
     await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.tbh.help.title"),
-                                                  description=utils.localize("embed.tbh.help.description")))
+                                                        description=utils.localize("embed.tbh.help.description")))
 
 
 @asks_group.command(description=utils.localize("command.asks.enable.description"))
@@ -107,7 +94,7 @@ async def link(ctx: Context,
     else:
         await dbconnection.update_db_column("users", user.user_id, "user_id", "ask_title", title)
     utils.formatlog("Generating link {0}...".format(str(ctx.interaction.id)))
-    img_name = generate_link_image(ask_title=title, img_id=ctx.interaction.id)
+    img_name = utils.generate_link_image(ask_title=title, img_id=ctx.interaction.id)
     embed = Embed(title=utils.localize("embed.link.title").format(ctx.user.display_name),
                   description=utils.localize("embed.link.description").format(utils.localize("template.app_link")))
     embed.set_image(url="attachment://" + img_name)
@@ -142,8 +129,8 @@ async def message(ctx: Context,
                             description=utils.localize("error.asks_closed").format(target_usr.display_name)))
             return
         utils.formatlog("Sending ask {0}...".format(str(ctx.interaction.id)))
-        img_name = generate_ask_image(ask_title=db_target.ask_title,
-                                      ask_msg=msg, img_id=ctx.interaction.id)
+        img_name = utils.generate_ask_image(ask_title=db_target.ask_title,
+                                            ask_msg=msg, img_id=ctx.interaction.id)
         sent_msg = await target_usr.send(file=discord.File(img_name))
         await sent_msg.add_reaction("❌")
         await sent_msg.add_reaction("❔")
@@ -217,56 +204,6 @@ async def handle_reactions(payload: RawReactionActionEvent) -> None:
 @bot.event
 async def on_raw_reaction_add(payload: RawReactionActionEvent) -> None:
     await handle_reactions(payload)
-
-
-def generate_link_image(ask_title: str, img_id: int) -> str:
-    ask_title = html.escape(ask_title)
-    with open("html/link.html", "r") as file:
-        data = file.read()
-
-        html_temp = Template(data)
-        html_filled = html_temp.substitute(ask_title=ask_title)
-        output_name = "{0}.png".format(str(img_id))
-        screenshot_and_crop(html_str=html_filled, save_as=output_name)
-    return output_name
-
-
-def generate_ask_image(ask_title: str, ask_msg: str, img_id: int) -> str:
-    ask_title = html.escape(ask_title)
-    ask_msg = html.escape(ask_msg)
-    with open("html/answer.html", "r") as file:
-        data = file.read()
-
-        html_temp = Template(data)
-        html_filled = html_temp.substitute(ask_title=ask_title, ask_msg=ask_msg)
-        output_name = "{0}.png".format(str(img_id))
-
-        screenshot_and_crop(html_str=html_filled, save_as=output_name)
-    return output_name
-
-
-def screenshot_and_crop(html_str: str, save_as: str):
-    if USE_HTML_JSON_SERVICE:
-        json_data = {
-            'html': html_str,
-            'export': {
-                'type': 'png'
-            },
-        }
-        response = requests.post(f'http://localhost:{SERVICE_PORT}/1/screenshot', json=json_data)
-
-        with open(save_as, 'wb') as f:
-            f.write(response.content)
-    else:
-        hti.screenshot(html_str=html_str, save_as=save_as)
-    im = Image.open(save_as)
-    width, height = im.size
-    p1_x = 300
-    p1_y = 50
-    p2_x = width - 300
-    p2_y = height - 50
-
-    im.crop((p1_x, p1_y, p2_x, p2_y)).save(save_as)
 
 
 bot.run(TOKEN)
