@@ -11,8 +11,6 @@ from discord.ext.bridge import Context
 from discord.ext.commands import dm_only, PrivateMessageOnly
 from dotenv import load_dotenv
 
-from html2image import Html2Image
-
 import dbconnection
 import html
 from PIL import Image
@@ -23,8 +21,14 @@ load_dotenv()
 TOKEN: str = os.getenv('DISCORD_TOKEN')
 BROWSER: str = os.getenv('BROWSER', 'chrome')
 BROWSER_LOCATION: str = os.getenv('BROWSER_LOCATION')
+USE_HTML_JSON_SERVICE: bool = bool(int(os.getenv('USE_HTML_JSON_SERVICE', "0")))
+SERVICE_PORT: str = os.getenv('SERVICE_PORT')
 
-hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
+if USE_HTML_JSON_SERVICE:
+    import requests
+else:
+    from html2image import Html2Image
+    hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
 
 # TODO(s)
 #  Markdown for text
@@ -213,8 +217,7 @@ def generate_link_image(ask_title: str, img_id: int) -> str:
         html_temp = Template(data)
         html_filled = html_temp.substitute(ask_title=ask_title)
         output_name = "{0}.png".format(str(img_id))
-        hti.screenshot(html_str=html_filled, save_as=output_name)
-        crop_image(output_name)
+        screenshot_and_crop(html_str=html_filled, save_as=output_name)
     return output_name
 
 
@@ -227,21 +230,33 @@ def generate_ask_image(ask_title: str, ask_msg: str, img_id: int) -> str:
         html_temp = Template(data)
         html_filled = html_temp.substitute(ask_title=ask_title, ask_msg=ask_msg)
         output_name = "{0}.png".format(str(img_id))
-        hti.screenshot(html_str=html_filled, save_as=output_name)
-        crop_image(output_name)
+
+        screenshot_and_crop(html_str=html_filled, save_as=output_name)
     return output_name
 
 
-def crop_image(img_dir):
-    im = Image.open(img_dir)
+def screenshot_and_crop(html_str: str, save_as: str):
+    if USE_HTML_JSON_SERVICE:
+        json_data = {
+            'html': html_str,
+            'export': {
+                'type': 'png'
+            },
+        }
+        response = requests.post(f'http://localhost:{SERVICE_PORT}/1/screenshot', json=json_data)
 
+        with open(save_as, 'wb') as f:
+            f.write(response.content)
+    else:
+        hti.screenshot(html_str=html_str, save_as=save_as)
+    im = Image.open(save_as)
     width, height = im.size
     p1_x = 300
     p1_y = 50
     p2_x = width - 300
     p2_y = height - 50
 
-    im.crop((p1_x, p1_y, p2_x, p2_y)).save(img_dir)
+    im.crop((p1_x, p1_y, p2_x, p2_y)).save(save_as)
 
 
 bot.run(TOKEN)
