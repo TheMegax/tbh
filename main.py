@@ -28,7 +28,6 @@ if USE_HTML_JSON_SERVICE:
     import requests
 else:
     from html2image import Html2Image
-
     hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
 
 # TODO(s)
