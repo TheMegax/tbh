@@ -3,3 +3,5 @@ py-cord~=2.6.1
 requests~=2.32.3
 html2image~=2.0.5
 pillow~=11.0.0
+Flask~=3.1.0
+Hypercorn~=0.17.3

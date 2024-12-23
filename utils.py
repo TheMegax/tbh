@@ -38,7 +38,7 @@ def formatlog(msg: str):
 
 def generate_link_image(ask_title: str, img_id: int) -> str:
     ask_title = html.escape(ask_title)
-    with open("html/link.html", "r") as file:
+    with open("web/html-render/link.html", "r") as file:
         data = file.read()
 
         html_temp = Template(data)
@@ -51,7 +51,7 @@ def generate_link_image(ask_title: str, img_id: int) -> str:
 def generate_ask_image(ask_title: str, ask_msg: str, img_id: int) -> str:
     ask_title = html.escape(ask_title)
     ask_msg = html.escape(ask_msg)
-    with open("html/answer.html", "r") as file:
+    with open("web/html-render/answer.html", "r") as file:
         data = file.read()
 
         html_temp = Template(data)

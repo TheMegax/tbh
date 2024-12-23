@@ -1,3 +1,4 @@
+import asyncio
 import os.path
 import pathlib
 from typing import Type
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 import dbconnection
 
 import utils
+import website
 
 load_dotenv()
 TOKEN: str = os.getenv('DISCORD_TOKEN')
@@ -185,6 +187,11 @@ async def on_ready() -> None:
     await dbconnection.initialize_database()
 
 
+@bot.event
+async def on_raw_reaction_add(payload: RawReactionActionEvent) -> None:
+    await handle_reactions(payload)
+
+
 async def handle_reactions(payload: RawReactionActionEvent) -> None:
     if payload.user_id == bot.user.id:
         return
@@ -201,9 +208,5 @@ async def handle_reactions(payload: RawReactionActionEvent) -> None:
             await msg.reply(embed=embed, delete_after=10)
 
 
-@bot.event
-async def on_raw_reaction_add(payload: RawReactionActionEvent) -> None:
-    await handle_reactions(payload)
-
-
-bot.run(TOKEN)
+asyncio.run(website.run_website())
+bot.run(TOKEN)  # Apparently this cannot run async, since it breaks adding more than one emoji to messages
