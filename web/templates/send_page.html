@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Answer</title>
+    <title>TBH - @{{username}}</title>
     <style>
         @media screen and (orientation: portrait) {
             .card {
@@ -31,6 +31,7 @@
             align-items: start;
             padding-top: 5vh;
             height: 100vh;
+            overflow: hidden;
             background-color: #e4e4ff;
         }
         .header {
@@ -42,23 +43,65 @@
             font-weight: bold;
             overflow-wrap: break-word;
         }
-        .content {
-            padding: 30px 20px;
-            height: 200px;
-            text-align: left;
+        .container {
+            padding: 20px 20px;
             color: #000;
+            border-radius: 30px;
+            height: 200px;
+        }
+        .textarea {
+            text-align: left;
             font-size: 20px;
             font-weight: bold;
             overflow-wrap: break-word;
+            border: none;
+            outline: none;
+            resize: none;
+            width: 100%;
+            height: inherit;
+        }
+        .submit {
+            display: flex;
+            margin-top: 20px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: rgb(44, 30, 93);
+            border-radius: 100px;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            color:white;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            height: 60px;
+            box-sizing: border-box;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">ask_title</div>
-        <div class="content">
-            ask_msg
+    <form>
+        <div class="card">
+            <div class="header">ask_title</div>
+            <div class="container">
+                <!--suppress HtmlFormInputWithoutLabel -->
+                <textarea oninput="onInput()" class="textarea" id="message" placeholder="Send me anonymous messages..." name="message" maxlength="300"></textarea>
+            </div>
         </div>
-    </div>
+        <button id="submit" class="submit" type="submit" style="transform: translateZ(0px); z-index: 1000; display: none;">Send!</button>
+    </form>
+    <script>
+        const button = document.getElementById("submit");
+        const textarea = document.getElementById("message");
+        function onInput() {
+            if (textarea.value.trim() === "") {
+                button.style.display = "none";
+            }
+            else {
+                button.style.display = "flex";
+            }
+        }
+    </script>
 </body>
 </html>

@@ -26,6 +26,7 @@ TOKEN: str = os.getenv('DISCORD_TOKEN')
 
 # Initialize bot object
 bot: Bot = discord.Bot()
+
 send_group = bot.create_group(name="send", description=utils.localize("command.send.description"))
 asks_group = bot.create_group(name="asks", description=utils.localize("command.asks.description"))
 tbh_group = bot.create_group(name="tbh", description=utils.localize("command.tbh.description"))
@@ -85,7 +86,7 @@ async def link(ctx: Context,
                title: Option(str, input_type=Type[str],
                              description=utils.localize("command.link.title"),
                              required=False,
-                             max_length=50
+                             max_length=100
                              )
                ) -> None:
     await ctx.defer()
@@ -114,7 +115,7 @@ async def message(ctx: Context,
                              ),
                   msg: Option(str, input_type=Type[str],
                               description=utils.localize("command.send.message.msg"),
-                              max_length=200
+                              max_length=300
                               )
                   ) -> None:
     await ctx.defer(ephemeral=True)
