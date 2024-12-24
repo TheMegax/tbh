@@ -33,6 +33,7 @@
   "embed.see_origin.server.description": "This message comes from a server.",
   "embed.see_origin.group_chat.description": "This message comes from a group chat.",
   "embed.see_origin.direct_message.description": "This message comes from a DM. Good luck!",
+  "embed.see_origin.browser.description": "This message comes from your web link.",
   "template.default_inbox_title": "Send me anonymous messages!",
   "template.app_link": "https://discord.com/oauth2/authorize?client_id=1315828152785698869"
 }

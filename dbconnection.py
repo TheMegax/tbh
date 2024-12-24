@@ -4,11 +4,12 @@ from pathlib import Path
 import utils
 
 from typing import Optional
-from sqlmodel import Field, SQLModel, create_engine, Session
+from sqlmodel import Field, SQLModel, create_engine, Session, select
 
-origins = ['unknown', 'server', 'group_chat', 'direct_message']
+origins = ['unknown', 'server', 'group_chat', 'direct_message', 'browser']
 
 
+# <<< MODELS >>> #
 class DBUser(SQLModel, table=True):
     user_id: int = Field(primary_key=True)
     username: Optional[str] = Field(default="")
@@ -25,11 +26,11 @@ engine = create_engine("sqlite:///database.db")
 
 
 # <<< USERS >>> #
-def get_or_create_db_user(user_id: int, username: str) -> DBUser | None:
+def get_or_create_db_user(user_id: int, username: str = None) -> DBUser | None:
     with Session(engine) as session:
         db_user = session.get(DBUser, user_id)
         # Updating the username
-        if db_user and db_user.username != username:
+        if db_user and username and db_user.username != username:
             db_user.username = username
             session.add(db_user)
             session.commit()
@@ -39,6 +40,15 @@ def get_or_create_db_user(user_id: int, username: str) -> DBUser | None:
             session.add(db_user)
             session.commit()
         return db_user
+
+
+def get_db_user_by_username(username: str) -> DBUser | None:
+    with Session(engine) as session:
+        statement = select(DBUser).where(DBUser.username == username)
+        # noinspection PyTypeChecker
+        results = session.exec(statement)
+        for user in results:
+            return user
 
 
 def update_db_user(db_user: DBUser):
