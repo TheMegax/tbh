@@ -28,8 +28,13 @@ engine = create_engine("sqlite:///database.db")
 def get_or_create_db_user(user_id: int, username: str) -> DBUser | None:
     with Session(engine) as session:
         db_user = session.get(DBUser, user_id)
-        if not db_user:
-            utils.formatlog(f'Adding new user with ID "{user_id}" and username "{username}"')
+        # Updating the username
+        if db_user and db_user.username != username:
+            db_user.username = username
+            session.add(db_user)
+            session.commit()
+        elif not db_user:
+            utils.formatlog(f'Adding new user with ID "{user_id}"')
             db_user = DBUser(user_id=user_id, username=username)
             session.add(db_user)
             session.commit()
