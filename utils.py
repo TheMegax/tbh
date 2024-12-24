@@ -36,30 +36,34 @@ def formatlog(msg: str):
     print("[{0}]    {1}".format(timestamp, msg))
 
 
-def generate_link_image(inbox_title: str, img_id: int) -> str:
-    inbox_title = html.escape(inbox_title)
-    with open("web/html-render/link.html", "r") as file:
+def generate_image(template_path: str, substitutions: dict, img_id: int) -> str:
+    escaped_substitutions = {key: html.escape(value) for key, value in substitutions.items()}
+
+    with open(template_path, "r") as file:
         data = file.read()
 
         html_temp = Template(data)
-        html_filled = html_temp.substitute(ask_title=inbox_title)
-        output_name = "{0}.png".format(str(img_id))
+        html_filled = html_temp.substitute(**escaped_substitutions)
+        output_name = f"{img_id}.png"
         screenshot_and_crop(html_str=html_filled, save_as=output_name)
+
     return output_name
+
+
+def generate_link_image(inbox_title: str, img_id: int) -> str:
+    return generate_image(
+        template_path="web/html-render/link.html",
+        substitutions={"ask_title": inbox_title},
+        img_id=img_id
+    )
 
 
 def generate_message_image(inbox_title: str, msg: str, img_id: int) -> str:
-    inbox_title = html.escape(inbox_title)
-    msg = html.escape(msg)
-    with open("web/html-render/answer.html", "r") as file:
-        data = file.read()
-
-        html_temp = Template(data)
-        html_filled = html_temp.substitute(ask_title=inbox_title, ask_msg=msg)
-        output_name = "{0}.png".format(str(img_id))
-
-        screenshot_and_crop(html_str=html_filled, save_as=output_name)
-    return output_name
+    return generate_image(
+        template_path="web/html-render/answer.html",
+        substitutions={"ask_title": inbox_title, "ask_msg": msg},
+        img_id=img_id
+    )
 
 
 def screenshot_and_crop(html_str: str, save_as: str):
@@ -84,4 +88,3 @@ def screenshot_and_crop(html_str: str, save_as: str):
     p2_y = height - 50
 
     im.crop((p1_x, p1_y, p2_x, p2_y)).save(save_as)
-

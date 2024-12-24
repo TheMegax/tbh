@@ -1,8 +1,12 @@
 import sqlite3
+from pathlib import Path
+
 import utils
 
 from typing import Optional
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, create_engine, Session
+
+origins = ['unknown', 'server', 'group_chat', 'direct_message']
 
 
 class DBUser(SQLModel, table=True):
@@ -12,132 +16,87 @@ class DBUser(SQLModel, table=True):
     inbox_title: Optional[str] = Field(default=utils.localize("template.default_inbox_title"))
 
 
-origins = ['unknown', 'server', 'group_chat', 'direct_message']
-
-create_user_table = """
-CREATE TABLE IF NOT EXISTS users (
-  user_id INTEGER PRIMARY KEY,
-  are_asks_open INTEGER NOT NULL DEFAULT 0,
-  ask_title TEXT DEFAULT 'Send me anonymous messages!'
-);
-"""
-
-create_ask_table = """
-CREATE TABLE IF NOT EXISTS asks (
-  ask_id INTEGER PRIMARY KEY,
-  origin TEXT DEFAULT 'unknown'
-);
-"""
+class DBMessage(SQLModel, table=True):
+    message_id: int = Field(primary_key=True)
+    origin: Optional[str] = Field(default=origins[0])
 
 
-class User:
-    user_id: int
-    are_asks_open: bool
-    ask_title: str
-
-    def __init__(self, user_id: int, are_asks_open: bool, ask_title: str):
-        self.user_id = user_id
-        self.are_asks_open = are_asks_open
-        self.ask_title = ask_title
+engine = create_engine("sqlite:///database.db")
 
 
-class Ask:
-    ask_id: int
-    origin: str
-
-    def __init__(self, ask_id: int, origin: str):
-        self.ask_id = ask_id
-        self.origin = origin
-
-
-async def get_or_create_user(user_id: int) -> User | None:
-    try:
-        with sqlite3.connect('servers.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE user_id=?)", (user_id,))
-            data = cursor.fetchone()
-            if not data[0]:
-                utils.formatlog(f'Adding new user with ID {user_id}')
-                cursor.execute("INSERT INTO users (user_id) VALUES( ? )", (user_id,))
-                conn.commit()
-            cursor.execute("SELECT user_id, are_asks_open, ask_title "
-                           "FROM users WHERE user_id=?", (user_id,))
-            data = cursor.fetchone()
-            return User(data[0], bool(data[1]), data[2])
-    except sqlite3.Error as e:
-        utils.formatlog(f"Could not get user with ID {user_id}!\n{e}")
-    return None
+# <<< USERS >>> #
+def get_or_create_db_user(user_id: int, username: str) -> DBUser | None:
+    with Session(engine) as session:
+        db_user = session.get(DBUser, user_id)
+        if not db_user:
+            utils.formatlog(f'Adding new user with ID "{user_id}" and username "{username}"')
+            db_user = DBUser(user_id=user_id, username=username)
+            session.add(db_user)
+            session.commit()
+        return db_user
 
 
-async def get_ask(ask_id: int) -> Ask | None:
-    try:
-        with sqlite3.connect('servers.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT EXISTS(SELECT 1 FROM asks WHERE ask_id=?)", (ask_id,))
-            data = cursor.fetchone()
-            if not data[0]:
-                return None
-            cursor.execute("SELECT ask_id, origin "
-                           "FROM asks WHERE ask_id=?", (ask_id,))
-            data = cursor.fetchone()
-            return Ask(data[0], data[1])
-    except sqlite3.Error as e:
-        utils.formatlog(f"Could not get ask with ID {ask_id}!\n{e}")
-    return None
+def update_db_user(db_user: DBUser):
+    with Session(engine) as session:
+        session.add(db_user)
+        session.commit()
 
 
-async def get_or_create_ask(ask_id: int, origin: str = origins[0]) -> Ask | None:
-    try:
-        with sqlite3.connect('servers.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT EXISTS(SELECT 1 FROM asks WHERE ask_id=?)", (ask_id,))
-            data = cursor.fetchone()
-            if not data[0]:
-                cursor.execute("INSERT INTO asks (ask_id, origin) VALUES( ?, ? )", (ask_id, origin))
-                conn.commit()
-            cursor.execute("SELECT ask_id, origin "
-                           "FROM asks WHERE ask_id=?", (ask_id,))
-            data = cursor.fetchone()
-            return Ask(data[0], data[1])
-    except sqlite3.Error as e:
-        utils.formatlog(f"Could not get ask with ID {ask_id}!\n{e}")
-    return None
+# <<< MESSAGES >>> #
+def get_db_message(message_id: int) -> DBMessage | None:
+    with Session(engine) as session:
+        return session.get(DBMessage, message_id)
 
 
-async def remove_ask(ask_id: int) -> bool:
-    try:
-        with sqlite3.connect('servers.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT EXISTS(SELECT 1 FROM asks WHERE ask_id=?)", (ask_id,))
-            data = cursor.fetchone()
-            if not data[0]:
-                return False
-            cursor.execute("DELETE FROM asks WHERE ask_id=?", (ask_id,))
-            conn.commit()
+def create_db_message(message_id: int, origin: str) -> None:
+    with Session(engine) as session:
+        db_message = session.get(DBMessage, message_id)
+        if not db_message:
+            utils.formatlog(f'Creating new message with ID "{message_id}" and origin "{origin}"')
+            db_message = DBMessage(message_id=message_id, origin=origin)
+            session.add(db_message)
+            session.commit()
+
+
+def update_db_message(db_message: DBMessage):
+    with Session(engine) as session:
+        session.add(db_message)
+        session.commit()
+
+
+def delete_db_message(message_id: int) -> bool:
+    with Session(engine) as session:
+        db_message = session.get(DBMessage, message_id)
+        if db_message:
+            session.delete(db_message)
+            session.commit()
             return True
-    except sqlite3.Error as e:
-        utils.formatlog(f"Could not delete ask with ID {ask_id}!\n{e}")
     return False
 
 
-async def update_db_column(table_name: str, row_id: int, data_name: str, column: str, value: any) -> bool:
-    try:
-        with sqlite3.connect('servers.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute(f"UPDATE {table_name} SET {column} = ? WHERE {data_name}=?", (value, row_id))
-            conn.commit()
-            return True
-    except sqlite3.Error as e:
-        utils.formatlog(f"Could not update {table_name} column {column} in {row_id}!\n{e}")
-    return False
-
-
+# <<< DATABASE >>> #
 async def initialize_database() -> None:
-    try:
+    SQLModel.metadata.create_all(engine)
+    migrate_to_sqlmodel()
+
+
+def migrate_to_sqlmodel() -> None:
+    old_db = Path("servers.db")
+    if old_db.is_file():
         with sqlite3.connect('servers.db') as conn:
             cursor = conn.cursor()
-            cursor.execute(create_ask_table)
-            cursor.execute(create_user_table)
-            conn.commit()
-    except sqlite3.Error as e:
-        utils.formatlog(str(e))
+
+            cursor.execute("SELECT * FROM users")
+            data = cursor.fetchall()
+            for user in data:
+                db_user = get_or_create_db_user(user_id=user[0], username="")
+                db_user.is_inbox_open = user[1]
+                db_user.inbox_title = user[2]
+                update_db_user(db_user)
+
+            cursor.execute("SELECT * FROM asks")
+            data = cursor.fetchall()
+            for message in data:
+                create_db_message(message_id=message[0], origin=message[1])
+
+        old_db.unlink()

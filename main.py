@@ -43,8 +43,9 @@ async def help(ctx: Context) -> None:
 
 @inbox_group.command(description=utils.localize("command.inbox.enable.description"))
 async def enable(ctx: Context) -> None:
-    user = await dbconnection.get_or_create_user(ctx.user.id)
-    await dbconnection.update_db_column("users", user.user_id, "user_id", "are_asks_open", 1)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user.is_inbox_open = True
+    dbconnection.update_db_user(db_user)
 
     await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.inbox.enable.title"),
                                                         description=utils.localize("embed.inbox.enable.description")))
@@ -52,8 +53,9 @@ async def enable(ctx: Context) -> None:
 
 @inbox_group.command(description=utils.localize("command.inbox.disable.description"))
 async def disable(ctx: Context) -> None:
-    user = await dbconnection.get_or_create_user(ctx.user.id)
-    await dbconnection.update_db_column("users", user.user_id, "user_id", "are_asks_open", 0)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user.is_inbox_open = False
+    dbconnection.update_db_user(db_user)
 
     await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.inbox.disable.title"),
                                                         description=utils.localize("embed.inbox.disable.description")))
@@ -63,7 +65,7 @@ async def disable(ctx: Context) -> None:
 @dm_only()
 async def clear(ctx: Context) -> None:
     await ctx.defer(ephemeral=True)
-    db_user = await dbconnection.get_or_create_user(ctx.user.id)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
     user = await bot.get_or_fetch_user(db_user.user_id)
 
     await user.create_dm()
@@ -74,7 +76,7 @@ async def clear(ctx: Context) -> None:
         async for msg in user.dm_channel.history():
             if msg.author.id != bot.user.id:
                 continue
-            await dbconnection.remove_ask(msg.id)
+            dbconnection.delete_db_message(msg.id)
             await msg.delete()
     await ctx.send_followup(embed=Embed(title=utils.localize("success.title"),
                                         description=utils.localize("success.clear"), color=Color.green()))
@@ -90,12 +92,13 @@ async def link(ctx: Context,
                              )
                ) -> None:
     await ctx.defer()
-    user = await dbconnection.get_or_create_user(ctx.user.id)
-    await dbconnection.update_db_column("users", user.user_id, "user_id", "are_asks_open", 1)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user.is_inbox_open = True
     if title is None:
-        title = user.ask_title
+        title = db_user.inbox_title
     else:
-        await dbconnection.update_db_column("users", user.user_id, "user_id", "ask_title", title)
+        db_user.inbox_title = title
+    dbconnection.update_db_user(db_user)
     utils.formatlog("Generating link {0}...".format(str(ctx.interaction.id)))
     img_name = utils.generate_link_image(inbox_title=title, img_id=ctx.interaction.id)
     embed = Embed(title=utils.localize("embed.link.title").format(ctx.user.display_name),
@@ -121,18 +124,18 @@ async def message(ctx: Context,
     await ctx.defer(ephemeral=True)
     to: User = to
 
-    await dbconnection.get_or_create_user(ctx.user.id)
-    db_target = await dbconnection.get_or_create_user(to.id)
+    dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_target = dbconnection.get_or_create_db_user(to.id, to.name)
 
     target_usr = await bot.get_or_fetch_user(to.id)
     if target_usr is not None:
-        if not db_target.are_asks_open:
+        if not db_target.is_inbox_open:
             await ctx.send_followup(
                 embed=Embed(title=utils.localize("error.title"), color=Color.red(),
                             description=utils.localize("error.inbox_closed").format(target_usr.display_name)))
             return
         utils.formatlog("Sending message {0}...".format(str(ctx.interaction.id)))
-        img_name = utils.generate_message_image(inbox_title=db_target.ask_title,
+        img_name = utils.generate_message_image(inbox_title=db_target.inbox_title,
                                                 msg=msg, img_id=ctx.interaction.id)
         sent_msg = await target_usr.send(file=discord.File(img_name))
         await sent_msg.add_reaction("❌")
@@ -145,7 +148,7 @@ async def message(ctx: Context,
         else:
             origin = dbconnection.origins[3]
 
-        await dbconnection.get_or_create_ask(sent_msg.id, origin)
+        dbconnection.create_db_message(sent_msg.id, origin)
         await ctx.send_followup(
             delete_after=5,
             embed=Embed(title=utils.localize("success.title"), color=Color.green(),
@@ -196,16 +199,16 @@ async def on_raw_reaction_add(payload: RawReactionActionEvent) -> None:
 async def handle_reactions(payload: RawReactionActionEvent) -> None:
     if payload.user_id == bot.user.id:
         return
-    ask = await dbconnection.get_ask(payload.message_id)
-    if ask:
+    db_message = dbconnection.get_db_message(payload.message_id)
+    if db_message:
         channel = await bot.fetch_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
         if payload.emoji.name == "❌":
             await msg.delete()
-            await dbconnection.remove_ask(ask.ask_id)
+            dbconnection.delete_db_message(db_message.message_id)
         elif payload.emoji.name == "❔":
             embed = Embed(title=utils.localize("embed.see_origin.title"),
-                          description=utils.localize(f"embed.see_origin.{ask.origin}.description"))
+                          description=utils.localize(f"embed.see_origin.{db_message.origin}.description"))
             await msg.reply(embed=embed, delete_after=10)
 
 
