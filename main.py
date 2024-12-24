@@ -28,10 +28,10 @@ TOKEN: str = os.getenv('DISCORD_TOKEN')
 bot: Bot = discord.Bot()
 
 send_group = bot.create_group(name="send", description=utils.localize("command.send.description"))
-asks_group = bot.create_group(name="asks", description=utils.localize("command.asks.description"))
+inbox_group = bot.create_group(name="inbox", description=utils.localize("command.inbox.description"))
 tbh_group = bot.create_group(name="tbh", description=utils.localize("command.tbh.description"))
 send_group.integration_types = {IntegrationType.user_install}
-asks_group.integration_types = {IntegrationType.user_install}
+inbox_group.integration_types = {IntegrationType.user_install}
 tbh_group.integration_types = {IntegrationType.user_install}
 
 
@@ -41,25 +41,25 @@ async def help(ctx: Context) -> None:
                                                         description=utils.localize("embed.tbh.help.description")))
 
 
-@asks_group.command(description=utils.localize("command.asks.enable.description"))
+@inbox_group.command(description=utils.localize("command.inbox.enable.description"))
 async def enable(ctx: Context) -> None:
     user = await dbconnection.get_or_create_user(ctx.user.id)
     await dbconnection.update_db_column("users", user.user_id, "user_id", "are_asks_open", 1)
 
-    await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.asks.enable.title"),
-                                                        description=utils.localize("embed.asks.enable.description")))
+    await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.inbox.enable.title"),
+                                                        description=utils.localize("embed.inbox.enable.description")))
 
 
-@asks_group.command(description=utils.localize("command.asks.disable.description"))
+@inbox_group.command(description=utils.localize("command.inbox.disable.description"))
 async def disable(ctx: Context) -> None:
     user = await dbconnection.get_or_create_user(ctx.user.id)
     await dbconnection.update_db_column("users", user.user_id, "user_id", "are_asks_open", 0)
 
-    await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.asks.disable.title"),
-                                                        description=utils.localize("embed.asks.disable.description")))
+    await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.inbox.disable.title"),
+                                                        description=utils.localize("embed.inbox.disable.description")))
 
 
-@asks_group.command(description=utils.localize("command.asks.clear.description"))
+@inbox_group.command(description=utils.localize("command.inbox.clear.description"))
 @dm_only()
 async def clear(ctx: Context) -> None:
     await ctx.defer(ephemeral=True)
@@ -97,7 +97,7 @@ async def link(ctx: Context,
     else:
         await dbconnection.update_db_column("users", user.user_id, "user_id", "ask_title", title)
     utils.formatlog("Generating link {0}...".format(str(ctx.interaction.id)))
-    img_name = utils.generate_link_image(ask_title=title, img_id=ctx.interaction.id)
+    img_name = utils.generate_link_image(inbox_title=title, img_id=ctx.interaction.id)
     embed = Embed(title=utils.localize("embed.link.title").format(ctx.user.display_name),
                   description=utils.localize("embed.link.description").format(utils.localize("template.app_link")))
     embed.set_image(url="attachment://" + img_name)
@@ -129,11 +129,11 @@ async def message(ctx: Context,
         if not db_target.are_asks_open:
             await ctx.send_followup(
                 embed=Embed(title=utils.localize("error.title"), color=Color.red(),
-                            description=utils.localize("error.asks_closed").format(target_usr.display_name)))
+                            description=utils.localize("error.inbox_closed").format(target_usr.display_name)))
             return
-        utils.formatlog("Sending ask {0}...".format(str(ctx.interaction.id)))
-        img_name = utils.generate_ask_image(ask_title=db_target.ask_title,
-                                            ask_msg=msg, img_id=ctx.interaction.id)
+        utils.formatlog("Sending message {0}...".format(str(ctx.interaction.id)))
+        img_name = utils.generate_message_image(inbox_title=db_target.ask_title,
+                                                msg=msg, img_id=ctx.interaction.id)
         sent_msg = await target_usr.send(file=discord.File(img_name))
         await sent_msg.add_reaction("❌")
         await sent_msg.add_reaction("❔")
@@ -152,7 +152,7 @@ async def message(ctx: Context,
                         description=utils.localize("success.sent").format(target_usr.display_name)))
         path = pathlib.Path(img_name)
         path.unlink(True)
-        utils.formatlog("Ask {0} sent!".format(str(ctx.interaction.id)))
+        utils.formatlog("Message {0} sent!".format(str(ctx.interaction.id)))
         return
 
     await ctx.send_followup(

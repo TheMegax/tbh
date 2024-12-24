@@ -1,6 +1,16 @@
 import sqlite3
-
 import utils
+
+from typing import Optional
+from sqlmodel import Field, SQLModel
+
+
+class DBUser(SQLModel, table=True):
+    user_id: int = Field(primary_key=True)
+    username: Optional[str] = Field(default="")
+    is_inbox_open: Optional[bool] = Field(default=False)
+    inbox_title: Optional[str] = Field(default=utils.localize("template.default_inbox_title"))
+
 
 origins = ['unknown', 'server', 'group_chat', 'direct_message']
 

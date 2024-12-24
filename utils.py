@@ -36,26 +36,26 @@ def formatlog(msg: str):
     print("[{0}]    {1}".format(timestamp, msg))
 
 
-def generate_link_image(ask_title: str, img_id: int) -> str:
-    ask_title = html.escape(ask_title)
+def generate_link_image(inbox_title: str, img_id: int) -> str:
+    inbox_title = html.escape(inbox_title)
     with open("web/html-render/link.html", "r") as file:
         data = file.read()
 
         html_temp = Template(data)
-        html_filled = html_temp.substitute(ask_title=ask_title)
+        html_filled = html_temp.substitute(ask_title=inbox_title)
         output_name = "{0}.png".format(str(img_id))
         screenshot_and_crop(html_str=html_filled, save_as=output_name)
     return output_name
 
 
-def generate_ask_image(ask_title: str, ask_msg: str, img_id: int) -> str:
-    ask_title = html.escape(ask_title)
-    ask_msg = html.escape(ask_msg)
+def generate_message_image(inbox_title: str, msg: str, img_id: int) -> str:
+    inbox_title = html.escape(inbox_title)
+    msg = html.escape(msg)
     with open("web/html-render/answer.html", "r") as file:
         data = file.read()
 
         html_temp = Template(data)
-        html_filled = html_temp.substitute(ask_title=ask_title, ask_msg=ask_msg)
+        html_filled = html_temp.substitute(ask_title=inbox_title, ask_msg=msg)
         output_name = "{0}.png".format(str(img_id))
 
         screenshot_and_crop(html_str=html_filled, save_as=output_name)
