@@ -15,8 +15,7 @@ app = Flask(__name__, template_folder="web/templates", static_folder="web/static
 
 # TODO(s)
 #  Main page
-#  "Disabled inbox" page
-#  Donate page
+#  Donate link
 #  TOS page
 #  Privacy policy page
 
@@ -38,10 +37,14 @@ def send_page(username: str):
     if not db_user:
         return not_found()
     if not db_user.is_inbox_open:
-        return not_found()  # TODO change this
+        disabled_title = utils.localize("website.disabled_page.title")
+        disabled_header = utils.localize("website.disabled_page.header").format(username)
+        disabled_description = utils.localize("website.disabled_page.description")
+        return render_template("disabled_page.html", disabled_title=disabled_title,
+                               disabled_header=disabled_header, disabled_description=disabled_description)
     message = request.args.get('message', type=str)
     if message:
-        # send_message(db_user, message)
+        send_message(db_user, message)
         return redirect(url_for('sent_page', message=message, username=username))
     return render_template(
         "send_page.html", username=username, inbox_title=db_user.inbox_title,
