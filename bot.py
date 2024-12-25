@@ -20,8 +20,8 @@ TOKEN: str = os.getenv('DISCORD_TOKEN')
 
 # TODO(s)
 #  Markdown for text
+#  Emoji support (both discord's and regular emojis)
 #  Customizable title gradient colors
-#  Link website? So you don't need to use the discord app
 
 # Initialize bot object
 bot: Bot = discord.Bot()
@@ -232,7 +232,7 @@ async def send_message_from_web(to_user, msg):
     if target_usr is None or not to_user.is_inbox_open:
         utils.formatlog("Nope")
         return
-    rand_id = random.randint(1000000, 9999999)
+    rand_id = random.randint(100000000000, 999999999999)
     utils.formatlog("Sending message from web...")
     img_name = utils.generate_message_image(inbox_title=to_user.inbox_title,
                                             msg=msg, img_id=rand_id)

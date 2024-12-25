@@ -29,8 +29,8 @@
             display: flex;
             justify-content: center;
             align-items: start;
-            padding-top: 5vh;
-            height: 100vh;
+            padding-top: 20vh;
+            height: 80vh;
             overflow: hidden;
             background-color: #e4e4ff;
         }
@@ -86,7 +86,7 @@
             <div class="header">{{inbox_title}}</div>
             <div class="container">
                 <!--suppress HtmlFormInputWithoutLabel -->
-                <textarea oninput="onInput()" class="textarea" id="message" placeholder="Send me anonymous messages..." name="message" maxlength="300"></textarea>
+                <textarea oninput="onInput()" class="textarea" id="message" placeholder="{{placeholder}}" name="message" maxlength="300"></textarea>
             </div>
         </div>
         <button id="submit" class="submit" type="submit" style="transform: translateZ(0px); z-index: 1000; display: none;">Send!</button>

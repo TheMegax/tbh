@@ -34,6 +34,20 @@
   "embed.see_origin.group_chat.description": "This message comes from a group chat.",
   "embed.see_origin.direct_message.description": "This message comes from a DM. Good luck!",
   "embed.see_origin.browser.description": "This message comes from your web link.",
+  "template.app_link": "https://discord.com/oauth2/authorize?client_id=1315828152785698869",
   "template.default_inbox_title": "Send me anonymous messages!",
-  "template.app_link": "https://discord.com/oauth2/authorize?client_id=1315828152785698869"
+  "website.send_page.placeholder": "Write your anonymous message...",
+  "website.sent_page.title": "Sent!",
+  "website.sent_page.header": "Sent message to {0}!",
+  "website.sent_page.again": "Send another?",
+  "website.404.flavor_text_1": "Well that's just awkward, you shouldn't be here!!!",
+  "website.404.flavor_text_2": "It's down there, somewhere. Take another look?",
+  "website.404.flavor_text_3": "YOU WANT [hyperlink blocked] DON'T YOU?",
+  "website.404.flavor_text_4": "Hey, reference!",
+  "website.404.flavor_text_5": "Sorry user, the link is in another website",
+  "website.404.flavor_text_6": "Wait, where's everything?",
+  "website.404.flavor_text_7": "You got 404'd!!!",
+  "website.404.flavor_text_8": "...or is it?! (it's not)",
+  "website.404.flavor_text_9": "Have you tried turning it off and on again?",
+  "website.404.flavor_text_10": "Okay, this is just silly now"
 }
