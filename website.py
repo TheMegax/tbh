@@ -25,10 +25,20 @@ def main_page():
     return render_template("send_page.html")
 
 
+@app.route('/tos', methods=['GET'])
+def tos_page():
+    return render_template("tos_page.html")
+
+
+@app.route('/privacy', methods=['GET'])
+def privacy_page():
+    return render_template("privacy_page.html")
+
+
 @app.errorhandler(404)
 def not_found(_e=None):
     flavor_text = utils.localize(f"website.404.flavor_text_{random.randint(1, 10)}")
-    return render_template("not_found.html", flavor_text=flavor_text)
+    return render_template("not_found_page.html", flavor_text=flavor_text)
 
 
 @app.route('/<username>', methods=['GET'])
