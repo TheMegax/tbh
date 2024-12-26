@@ -32,17 +32,25 @@ session: Session = Session(engine)
 # <<< USERS >>> #
 def get_or_create_db_user(user_id: int, discord_user: User = None) -> DBUser | None:
     db_user = session.get(DBUser, user_id)
+    if discord_user:
+        username = discord_user.name
+        avatar_url = discord_user.avatar.url
+    else:
+        username = ""
+        avatar_url = ""
+
     # Updating the user if needed
     if db_user and discord_user:
-        if db_user.username != discord_user.name:
-            db_user.username = discord_user.name
-        if db_user.avatar_url != discord_user.avatar.url:
-            db_user.avatar_url = discord_user.avatar.url
+        if db_user.username != username:
+            db_user.username = username
+        if db_user.avatar_url != avatar_url:
+            db_user.avatar_url = avatar_url
         session.add(db_user)
         session.commit()
     elif not db_user:
         utils.formatlog(f'Adding new user with ID "{user_id}"')
-        db_user = DBUser(user_id=user_id, username=discord_user.name, avatar_url=discord_user.avatar.url)
+
+        db_user = DBUser(user_id=user_id, username=username, avatar_url=avatar_url)
         session.add(db_user)
         session.commit()
     return db_user
