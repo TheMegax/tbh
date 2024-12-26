@@ -64,7 +64,7 @@ def sent_page():
     username = request.args.get('username', type=str)
 
     if not (message and username):
-        return not_found()
+        return redirect(url_for('main_page'))
     sent_title = utils.localize("website.sent_page.title")
     sent_header = utils.localize("website.sent_page.header").format(username)
     again = utils.localize("website.sent_page.again")
