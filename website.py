@@ -19,7 +19,6 @@ app = Flask(__name__, template_folder="web/templates", static_folder="web/static
 
 # TODO(s)
 #  Main page
-#  Donate link
 
 
 @app.route('/', methods=['GET'])
@@ -88,7 +87,7 @@ async def run_website():
     from hypercorn.config import Config
 
     config = Config()
-    config.bind = [f"0.0.0.0:{WEBSITE_PORT}"]
+    config.bind = [f"localhost:{WEBSITE_PORT}"]
     await serve(app, config)
 
 
