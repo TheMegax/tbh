@@ -38,6 +38,32 @@
             display: inline-block;
             border-bottom: 2px solid black;
         }
+        .bottom-container {
+            bottom: calc(env(safe-area-inset-bottom) + 100px);
+            position: absolute;
+            width: 85%;
+            max-width: 640px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 35px;
+            padding-top: 32px;
+            text-align: center;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            z-index: 1;
+        }
+        .tos-privacy {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(20, 20, 20, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -45,6 +71,13 @@
         <img class="check" src="../static/check-circle.png" alt="sent-icon">
         <h2>{{sent_header}}</h2>
         <a class="anothermsg" href="javascript:document.referrer ? (window.location = document.referrer) : history.back();">{{again}}</a>
+    </div>
+    <div class="bottom-container">
+        <div class="tos-privacy">
+            <a href="/tos">Terms</a>
+             •
+            <a href="/privacy">Privacy</a>
+        </div>
     </div>
 </body>
 </html>

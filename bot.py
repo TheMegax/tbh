@@ -42,7 +42,7 @@ async def help(ctx: Context) -> None:
 
 @inbox_group.command(description=utils.localize("command.inbox.enable.description"))
 async def enable(ctx: Context) -> None:
-    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = True
     dbconnection.update_db_user(db_user)
 
@@ -52,7 +52,7 @@ async def enable(ctx: Context) -> None:
 
 @inbox_group.command(description=utils.localize("command.inbox.disable.description"))
 async def disable(ctx: Context) -> None:
-    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = False
     dbconnection.update_db_user(db_user)
 
@@ -64,7 +64,7 @@ async def disable(ctx: Context) -> None:
 @dm_only()
 async def clear(ctx: Context) -> None:
     await ctx.defer(ephemeral=True)
-    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     user = await bot.get_or_fetch_user(db_user.user_id)
 
     await user.create_dm()
@@ -91,7 +91,7 @@ async def link(ctx: Context,
                              )
                ) -> None:
     await ctx.defer()
-    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
+    db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = True
     if title is None:
         title = db_user.inbox_title
@@ -123,8 +123,8 @@ async def message(ctx: Context,
     await ctx.defer(ephemeral=True)
     to: User = to
 
-    dbconnection.get_or_create_db_user(ctx.user.id, ctx.user.name)
-    db_target = dbconnection.get_or_create_db_user(to.id, to.name)
+    dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
+    db_target = dbconnection.get_or_create_db_user(to.id, to)
 
     target_usr = await bot.get_or_fetch_user(to.id)
     if target_usr is not None:
@@ -187,7 +187,6 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 async def on_ready() -> None:
     print("BOT STARTED")
     utils.formatlog(f'{bot.user} has connected to Discord!')
-    await dbconnection.initialize_database()
 
 
 @bot.event

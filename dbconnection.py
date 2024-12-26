@@ -1,6 +1,8 @@
 import sqlite3
 from pathlib import Path
 
+from discord import User
+
 import utils
 
 from typing import Optional
@@ -13,6 +15,7 @@ origins = ['unknown', 'server', 'group_chat', 'direct_message', 'browser']
 class DBUser(SQLModel, table=True):
     user_id: int = Field(primary_key=True)
     username: Optional[str] = Field(default="")
+    avatar_url: Optional[str] = Field(default="")
     is_inbox_open: Optional[bool] = Field(default=False)
     inbox_title: Optional[str] = Field(default=utils.localize("template.default_inbox_title"))
 
@@ -26,17 +29,20 @@ engine = create_engine("sqlite:///database.db")
 
 
 # <<< USERS >>> #
-def get_or_create_db_user(user_id: int, username: str = None) -> DBUser | None:
+def get_or_create_db_user(user_id: int, discord_user: User = None) -> DBUser | None:
     with Session(engine) as session:
         db_user = session.get(DBUser, user_id)
-        # Updating the username
-        if db_user and username and db_user.username != username:
-            db_user.username = username
+        # Updating the user if needed
+        if db_user and discord_user:
+            if db_user.username != discord_user.name:
+                db_user.username = discord_user.name
+            if db_user.avatar_url != discord_user.avatar.url:
+                db_user.avatar_url = discord_user.avatar.url
             session.add(db_user)
             session.commit()
         elif not db_user:
             utils.formatlog(f'Adding new user with ID "{user_id}"')
-            db_user = DBUser(user_id=user_id, username=username)
+            db_user = DBUser(user_id=user_id, username=discord_user.name, avatar_url=discord_user.avatar.url)
             session.add(db_user)
             session.commit()
         return db_user
@@ -90,7 +96,7 @@ def delete_db_message(message_id: int) -> bool:
 
 
 # <<< DATABASE >>> #
-async def initialize_database() -> None:
+def initialize_database() -> None:
     SQLModel.metadata.create_all(engine)
     migrate_to_sqlmodel()
 
@@ -104,7 +110,7 @@ def migrate_to_sqlmodel() -> None:
             cursor.execute("SELECT * FROM users")
             data = cursor.fetchall()
             for user in data:
-                db_user = get_or_create_db_user(user_id=user[0], username="")
+                db_user = get_or_create_db_user(user_id=user[0])
                 db_user.is_inbox_open = user[1]
                 db_user.inbox_title = user[2]
                 update_db_user(db_user)

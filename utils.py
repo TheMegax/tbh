@@ -9,8 +9,8 @@ import json
 from datetime import datetime
 
 load_dotenv()
-BROWSER: str = os.getenv('BROWSER', 'chrome')
-BROWSER_LOCATION: str = os.getenv('BROWSER_LOCATION')
+BROWSER: str = os.getenv('HTML2IMAGE_BROWSER', 'chrome')
+BROWSER_LOCATION: str = os.getenv('HTML2IMAGE_BROWSER_LOCATION')
 USE_HTML_JSON_SERVICE: bool = bool(int(os.getenv('USE_HTML_JSON_SERVICE', "0")))
 SERVICE_PORT: str = os.getenv('SERVICE_PORT')
 

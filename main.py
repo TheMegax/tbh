@@ -4,12 +4,14 @@ import os
 from dotenv import load_dotenv
 
 import bot
+import dbconnection
 import website
 
 load_dotenv()
 TOKEN: str = os.getenv('DISCORD_TOKEN')
 
 if __name__ == "__main__":
+    dbconnection.initialize_database()
     asyncio.ensure_future(website.run_website())
     asyncio.ensure_future(bot.start_bot(TOKEN))
 

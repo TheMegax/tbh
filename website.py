@@ -1,6 +1,7 @@
 import asyncio
 import random
 
+from dotenv import load_dotenv
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 import os
 
@@ -10,14 +11,15 @@ import utils
 from bot import message_queue
 from dbconnection import DBUser
 
+load_dotenv()
+WEBSITE_PORT: int = int(os.getenv('WEBSITE_PORT', '5000'))
+
 app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
 
 
 # TODO(s)
 #  Main page
 #  Donate link
-#  TOS page
-#  Privacy policy page
 
 
 @app.route('/', methods=['GET'])
@@ -86,7 +88,7 @@ async def run_website():
     from hypercorn.config import Config
 
     config = Config()
-    config.bind = ["0.0.0.0:5000"]
+    config.bind = [f"0.0.0.0:{WEBSITE_PORT}"]
     await serve(app, config)
 
 
