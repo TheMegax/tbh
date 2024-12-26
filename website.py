@@ -17,13 +17,9 @@ WEBSITE_PORT: int = int(os.getenv('WEBSITE_PORT', '5000'))
 app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
 
 
-# TODO(s)
-#  Main page
-
-
 @app.route('/', methods=['GET'])
 def main_page():
-    return render_template("send_page.html")
+    return render_template("main_page.html", app_link=utils.localize("template.app_link"))
 
 
 @app.route('/tos', methods=['GET'])
