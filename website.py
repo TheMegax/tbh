@@ -60,7 +60,7 @@ def send_page(username: str):
         return redirect(url_for('sent_page', message=message, username=username))
     return render_template(
         "send_page.html", username=username, inbox_title=db_user.inbox_title,
-        placeholder=utils.localize("website.send_page.placeholder"))
+        user_avatar=db_user.avatar_url, placeholder=utils.localize("website.send_page.placeholder"))
 
 
 @app.route('/sent', methods=['GET'])

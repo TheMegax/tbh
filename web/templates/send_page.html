@@ -99,6 +99,8 @@
             position: absolute;
             bottom: 0;
             width: 100%;
+        }
+        .tos-privacy-text {
             text-decoration: none;
             font-size: 12px;
             font-weight: 700;
@@ -110,6 +112,9 @@
     <form>
         <div class="card">
             <div class="header">{{inbox_title}}</div>
+            <div class="pfp-container">
+                <img class="pfp" src="{{user_avatar}}" alt="user-pfp">
+            </div>
             <div class="container">
                 <!--suppress HtmlFormInputWithoutLabel -->
                 <textarea oninput="onInput()" class="textarea" id="message" placeholder="{{placeholder}}" name="message" maxlength="300"></textarea>
@@ -118,10 +123,10 @@
         <button id="submit" class="submit" type="submit" style="transform: translateZ(0px); z-index: 1000; display: none;">Send!</button>
     </form>
     <div class="bottom-container">
-        <div class="tos-privacy">
-            <a href="/tos">Terms</a>
+        <div class="tos-privacy tos-privacy-text">
+            <a class="tos-privacy-text" href="/tos">Terms</a>
              • 
-            <a href="/privacy">Privacy</a>
+            <a class="tos-privacy-text" href="/privacy">Privacy</a>
         </div>
     </div>
     <script>

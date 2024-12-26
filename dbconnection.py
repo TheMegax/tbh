@@ -26,72 +26,66 @@ class DBMessage(SQLModel, table=True):
 
 
 engine = create_engine("sqlite:///database.db")
+session: Session = Session(engine)
 
 
 # <<< USERS >>> #
 def get_or_create_db_user(user_id: int, discord_user: User = None) -> DBUser | None:
-    with Session(engine) as session:
-        db_user = session.get(DBUser, user_id)
-        # Updating the user if needed
-        if db_user and discord_user:
-            if db_user.username != discord_user.name:
-                db_user.username = discord_user.name
-            if db_user.avatar_url != discord_user.avatar.url:
-                db_user.avatar_url = discord_user.avatar.url
-            session.add(db_user)
-            session.commit()
-        elif not db_user:
-            utils.formatlog(f'Adding new user with ID "{user_id}"')
-            db_user = DBUser(user_id=user_id, username=discord_user.name, avatar_url=discord_user.avatar.url)
-            session.add(db_user)
-            session.commit()
-        return db_user
+    db_user = session.get(DBUser, user_id)
+    # Updating the user if needed
+    if db_user and discord_user:
+        if db_user.username != discord_user.name:
+            db_user.username = discord_user.name
+        if db_user.avatar_url != discord_user.avatar.url:
+            db_user.avatar_url = discord_user.avatar.url
+        session.add(db_user)
+        session.commit()
+    elif not db_user:
+        utils.formatlog(f'Adding new user with ID "{user_id}"')
+        db_user = DBUser(user_id=user_id, username=discord_user.name, avatar_url=discord_user.avatar.url)
+        session.add(db_user)
+        session.commit()
+    return db_user
 
 
 def get_db_user_by_username(username: str) -> DBUser | None:
-    with Session(engine) as session:
-        statement = select(DBUser).where(DBUser.username == username)
-        # noinspection PyTypeChecker
-        results = session.exec(statement)
-        for user in results:
-            return user
+    statement = select(DBUser).where(DBUser.username == username)
+    # noinspection PyTypeChecker
+    results = session.exec(statement)
+    for user in results:
+        return user
 
 
 def update_db_user(db_user: DBUser):
-    with Session(engine) as session:
-        session.add(db_user)
-        session.commit()
+    session.add(db_user)
+    session.commit()
 
 
 # <<< MESSAGES >>> #
 def get_db_message(message_id: int) -> DBMessage | None:
-    with Session(engine) as session:
-        return session.get(DBMessage, message_id)
+    return session.get(DBMessage, message_id)
 
 
 def create_db_message(message_id: int, origin: str) -> None:
-    with Session(engine) as session:
-        db_message = session.get(DBMessage, message_id)
-        if not db_message:
-            utils.formatlog(f'Creating new message with ID "{message_id}" and origin "{origin}"')
-            db_message = DBMessage(message_id=message_id, origin=origin)
-            session.add(db_message)
-            session.commit()
-
-
-def update_db_message(db_message: DBMessage):
-    with Session(engine) as session:
+    db_message = session.get(DBMessage, message_id)
+    if not db_message:
+        utils.formatlog(f'Creating new message with ID "{message_id}" and origin "{origin}"')
+        db_message = DBMessage(message_id=message_id, origin=origin)
         session.add(db_message)
         session.commit()
 
 
+def update_db_message(db_message: DBMessage):
+    session.add(db_message)
+    session.commit()
+
+
 def delete_db_message(message_id: int) -> bool:
-    with Session(engine) as session:
-        db_message = session.get(DBMessage, message_id)
-        if db_message:
-            session.delete(db_message)
-            session.commit()
-            return True
+    db_message = session.get(DBMessage, message_id)
+    if db_message:
+        session.delete(db_message)
+        session.commit()
+        return True
     return False
 
 

@@ -19,8 +19,10 @@ load_dotenv()
 TOKEN: str = os.getenv('DISCORD_TOKEN')
 
 # TODO(s)
-#  Markdown for text
-#  Emoji support (both discord's and regular emojis)
+#  Discord markdown for text (minus titles)
+#  Emoji support
+#   - Regular emojis
+#   - Discord emojis
 #  Customizable title gradient colors
 
 # Initialize bot object
