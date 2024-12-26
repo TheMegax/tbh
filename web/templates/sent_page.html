@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preload" as="image" href="../static/check-circle.png">
+    <title>TBH - {{sent_title}}</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 85vh;
+            padding-bottom: 15vh;
+            overflow: hidden;
+            background-color: #e4e4ff;
+        }
+        .container {
+            width: 85%;
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .check {
+            width: 15vh;
+            height: 15vh;
+        }
+        .anothermsg {
+            text-decoration: none;
+            color: black;
+            font-weight: 700;
+            font-size: 18px;
+            margin: 0;
+            display: inline-block;
+            border-bottom: 2px solid black;
+        }
+        .bottom-container {
+            bottom: calc(env(safe-area-inset-bottom) + 100px);
+            position: absolute;
+            width: 85%;
+            max-width: 640px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 35px;
+            padding-top: 32px;
+            text-align: center;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            z-index: 1;
+        }
+        .tos-privacy {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(20, 20, 20, 0.5);
+        }
+        .tos-privacy-text {
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(20, 20, 20, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img class="check" src="../static/check-circle.png" alt="sent-icon">
+        <h2>{{sent_header}}</h2>
+        <a class="anothermsg" href="javascript:document.referrer ? (window.location = document.referrer) : history.back();">{{again}}</a>
+    </div>
+    <div class="bottom-container">
+        <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="themegax" data-color="#2a1d5b" data-emoji=""  data-font="Bree" data-text="Buy me a coffee" data-outline-color="#ffffff" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
+        <div class="tos-privacy tos-privacy-text">
+            <a class="tos-privacy-text" href="/tos">Terms</a>
+             •
+            <a class="tos-privacy-text" href="/privacy">Privacy</a>
+        </div>
+    </div>
+</body>
+</html>

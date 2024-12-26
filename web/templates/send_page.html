@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBH - @{{username}}</title>
+    <style>
+        @media screen and (orientation: portrait) {
+            .card {
+                width: 80vw;
+                border-radius: 30px;
+                overflow: hidden;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                background-color: white;
+            }
+        }
+        @media screen and (min-width: 800px) {
+            .card {
+                width: 45vw;
+                border-radius: 30px;
+                overflow: hidden;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                background-color: white;
+            }
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: start;
+            padding-top: 20vh;
+            height: 80vh;
+            overflow: hidden;
+            background-color: #e4e4ff;
+        }
+        .header {
+            display: inline-flex;
+            width: 100%;
+            background: linear-gradient(to right, #A100FFFF, #71C4FFFF);
+            color: white;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            align-items: center;
+            text-align: center;
+        }
+        .header-text {
+            font-size: 24px;
+            font-weight: bold;
+            overflow-wrap: break-word;
+            margin-right: 30px;
+        }
+        .pfp-container {
+            border-radius: 300px;
+            width: 55px;
+            height: 55px;
+            background-color: #F1F1F1;
+            background-position: center center;
+            background-size: 55px 55px;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            display: block;
+            margin-right: 20px;
+            margin-left: 20px;
+        }
+        .pfp {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+        .container {
+            padding: 20px 20px;
+            color: #000;
+            border-radius: 30px;
+            height: 200px;
+        }
+        .textarea {
+            text-align: left;
+            font-size: 20px;
+            font-weight: bold;
+            overflow-wrap: break-word;
+            border: none;
+            outline: none;
+            resize: none;
+            width: 100%;
+            height: inherit;
+        }
+        .submit {
+            display: flex;
+            margin-top: 20px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: rgb(44, 30, 93);
+            border-radius: 100px;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            color:white;
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            height: 60px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .bottom-container {
+            bottom: calc(env(safe-area-inset-bottom) + 100px);
+            position: absolute;
+            width: 85%;
+            max-width: 640px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 35px;
+            padding-top: 32px;
+            text-align: center;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            z-index: 1;
+        }
+        .tos-privacy {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        .tos-privacy-text {
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(20, 20, 20, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <div class="card">
+            <div class="header">
+                <span class="pfp-container">
+                    <!--suppress HtmlUnknownTarget -->
+                    <img class="pfp" src="{{user_avatar}}" alt="user-pfp">
+                </span>
+                <span class="header-text">{{inbox_title}}</span>
+            </div>
+            <div class="container">
+                <!--suppress HtmlFormInputWithoutLabel -->
+                <textarea oninput="onInput()" class="textarea" id="message" placeholder="{{placeholder}}" name="message" maxlength="300"></textarea>
+            </div>
+        </div>
+        <button id="submit" class="submit" type="submit" style="transform: translateZ(0px); z-index: 1000; display: none;">Send!</button>
+    </form>
+    <div class="bottom-container">
+        <div class="tos-privacy tos-privacy-text">
+            <a class="tos-privacy-text" href="/tos">Terms</a>
+             • 
+            <a class="tos-privacy-text" href="/privacy">Privacy</a>
+        </div>
+    </div>
+    <script>
+        const button = document.getElementById("submit");
+        const textarea = document.getElementById("message");
+        function onInput() {
+            if (textarea.value.trim() === "") {
+                button.style.display = "none";
+            }
+            else {
+                button.style.display = "flex";
+            }
+        }
+    </script>
+</body>
+</html>
