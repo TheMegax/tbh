@@ -103,7 +103,8 @@ async def link(ctx: Context,
     utils.formatlog("Generating link {0}...".format(str(ctx.interaction.id)))
     img_name = utils.generate_link_image(inbox_title=title, img_id=ctx.interaction.id)
     embed = Embed(title=utils.localize("embed.link.title").format(ctx.user.display_name),
-                  description=utils.localize("embed.link.description").format(utils.localize("template.app_link")))
+                  description=utils.localize("embed.link.description")
+                  .format(utils.localize("website.link"), db_user.username, utils.localize("template.app_link")))
     embed.set_image(url="attachment://" + img_name)
 
     await ctx.send_followup(file=discord.File(img_name), embed=embed)
