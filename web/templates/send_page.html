@@ -305,7 +305,6 @@
                 "thoughts on sportsball",
                 "mwahahahahahahahAHAHAHAHAHAHAHAHAHA!",
                 "favorite seasoning",
-                "it was cruel to give lightning McQueen a foot fetish, for he lives in a world without feet",
                 "tell a fun fact about yourself",
                 "favorite ship",
                 "favorite sauce",
@@ -378,6 +377,12 @@
                 "favorite flower?",
                 "favorite fruit?"
             ]
+            if (getRandomInt(0, questions.length*2.5) === 0) { // Weird ass questions
+                questions = [
+                    "it was cruel to give lightning McQueen a foot fetish, for he lives in a world without feet",
+                ]
+            }
+
             return questions[getRandomInt(0, questions.length - 1)];
         }
     </script>
