@@ -78,6 +78,7 @@
             border-radius: 20px;
         }
         .container {
+            position: relative;
             padding: 20px 20px;
             color: #000;
             border-radius: 30px;
@@ -140,6 +141,23 @@
             font-weight: 700;
             color: rgba(20, 20, 20, 0.5);
         }
+        .dice-button {
+            cursor: pointer;
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            font-size: 20px;
+            background-color: rgba(20, 20, 20, 0.1);
+            padding: 8px;
+            border-radius: 100px;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            touch-action: manipulation;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body class="body-padding">
@@ -153,6 +171,7 @@
                 <span class="header-text">{{inbox_title}}</span>
             </div>
             <div class="container">
+                <div class="dice-button" onclick="fillRandomQuestion()">🎲</div>
                 <!--suppress HtmlFormInputWithoutLabel -->
                 <textarea oninput="onInput()" class="textarea" id="message" placeholder="{{placeholder}}" name="message" maxlength="300"></textarea>
             </div>
@@ -169,6 +188,7 @@
     <script>
         const button = document.getElementById("submit");
         const textarea = document.getElementById("message");
+
         function onInput() {
             if (textarea.value.trim() === "") {
                 button.style.display = "none";
@@ -176,6 +196,189 @@
             else {
                 button.style.display = "flex";
             }
+        }
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function fillRandomQuestion() {
+            textarea.value = randomQuestion();
+            onInput();
+        }
+
+        function randomQuestion() {
+            let today = new Date();
+            const date = new Date(today);
+            date.setDate(date.getDate() + getRandomInt(14, 70)); // Between 14-70 days
+            const yyyy = date.getFullYear();
+            let mm = date.getMonth() + 1;
+            let dd = date.getDate();
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+            const ominousDate = dd + '/' + mm + '/' + yyyy;
+
+            const ominousIP = getRandomInt(1, 223) + "." + getRandomInt(0, 255) + "." + getRandomInt(0, 255) + "." + getRandomInt(0, 255)
+
+            let questions = [
+                "chomp",
+                "i know who you are",
+                "random fact, go",
+                "post a lesbian",
+                "post a dog",
+                "current hyperfixation?",
+                "favorite song?",
+                "favorite singer?",
+                "favorite band?",
+                "favorite piece of artwork?",
+                "favorite image?",
+                "what are you up to",
+                "say something nice about Gwendolin",
+                "say something nice about a friend",
+                "say something mean about a friend",
+                "favorite food?",
+                "what did you last eat",
+                "any plans soon?",
+                "are you romantically interested in or involved with anyone?",
+                ":333333333333333333333333",
+                "Pet suho",
+                "favorite thing you can do with potatoes",
+                "any pets?",
+                "*pets you*",
+                "what's the last movie or show you watched",
+                "what's the last song you listened to",
+                "favorite music note?",
+                "what's your favorite noise",
+                "answer the next question via voice message",
+                "scream at the top of your lungs right now",
+                "favorite scent?",
+                "favorite ice cream flavor?",
+                "giving you a hug btw",
+                "giving you a crawfish btw",
+                "*places a Portuguese man o war right in your arms*",
+                "can I borrow your soul for a bit",
+                "what video game do you have the most play time in",
+                "what would you wear if you had unlimited freedom with it",
+                "can i climb on you",
+                "commit a violence",
+                "favorite crime?",
+                "do you have games on your phone",
+                "are you puntable.",
+                "*breakdances in front of you*",
+                "guess who i am",
+                "do you have any art of you?",
+                "hugs you btw",
+                "worst food you've eaten",
+                "pow, i shot you",
+                "anything you're proud of?",
+                "what do you hate with a passion?",
+                "guh",
+                "post your fave",
+                ominousDate, // Random future date
+                "kissing your mom btw",
+                "your father is a whore",
+                "rate the quality of your own singing",
+                "rate the quality of your own cooking",
+                "rate the quality of your own art",
+                "rate the quality of your parent's cooking",
+                "rate the quality of your siblings",
+                "favorite kind of candy",
+                "how do i cure my hiccups",
+                "do your laundry.",
+                "shrimp check!",
+                "go stretch right now",
+                "onions imminent.",
+                "answer the next question with a song lyric",
+                "favorite thing to sink your teeth into",
+                "most lickable rock?",
+                "most lickable object in your house?",
+                "answer the next one with a threat",
+                "ily bestie <3",
+                "i am coming. watch out.",
+                "turn around.",
+                "make a complaint",
+                "thoughts on bears",
+                "do you have or want any piercings",
+                "which object in your room could you destroy the fastest",
+                "thoughts on sportsball",
+                "mwahahahahahahahAHAHAHAHAHAHAHAHAHA!",
+                "favorite seasoning",
+                "it was cruel to give lightning McQueen a foot fetish, for he lives in a world without feet",
+                "tell a fun fact about yourself",
+                "favorite ship",
+                "favorite sauce",
+                "the day of weasels draws ever closer.",
+                "be not afraid",
+                "the fog is coming the fog is coming the fog is coming the fog is coming the fog is coming",
+                "the rain is coming soon. take shelter.",
+                "thoughts on the unstoppable passage of time?",
+                "make me depressed",
+                "make me angry",
+                "make me happy",
+                "putting you in my pocket",
+                ominousIP, // Random IP
+                "how many marshmallows can you fit in your mouth",
+                "go drink water",
+                "it says gullible on the next ask",
+                "thoughts on leather jackets",
+                "would you rather have 1000000000$ or eat a sawblade",
+                "whats 2 + 2",
+                "*stares into your soul*",
+                "sdrawkcab si ksa siht",
+                "*hands u a lit stick of dynamite*",
+                "favorite Eldritch horror",
+                "do you enjoy horror content",
+                "would you get cybernetic enhancements and if so, what would you get",
+                "i baked you cookies",
+                "*pushes a cup off your desk*",
+                "mrow!",
+                "woof",
+                "what superpower would you pick",
+                "can you drive",
+                "tazes you",
+                "hits you in the head with a baseball bat",
+                "bites your nose clean off",
+                "do you think",
+                "what's your favorite",
+                "what's something weird or unpopular that you enjoy",
+                "what's something popular that you despise",
+                "favorite celestial body",
+                "Dr Seuss stole my spleen do you want to help me get my revenge",
+                "Ted Cruz ate my son",
+                "Serena Williams stabbed me in an alleyway in London",
+                "Tom Holland kidnapped my dog",
+                "Michael Buble roofied me",
+                "are you shadow the hedgehog coded",
+                "which server members could you beat in a fight",
+                "did you ever play sports as a kid",
+                "i want your spinal cord",
+                "curling up into your arms and falling asleep btw. you have to hold me now. suffer.",
+                "i wouldn't trust you with my life but i would trust you with my liver",
+                "hands u a rose. it explodes.",
+                "best moments of your life?",
+                "how is your room decorated",
+                "what's on your home/lock screen",
+                "what's your desktop background",
+                "woagus amogus",
+                "credit card number?",
+                "what do you desire",
+                "do you wear glasses",
+                "what do you like to read",
+                "can i recommend you a song",
+                "can i recommend you a game",
+                "can i recommend you a fanfic",
+                "can i recommend you a show",
+                "thoughts on toxic yuri",
+                "how tall are you",
+                "how comfy are you rn",
+                "when does gambling become not worth it",
+                "fish jumpscare!",
+                "favorite flower?",
+                "favorite fruit?"
+            ]
+            return questions[getRandomInt(0, questions.length - 1)];
         }
     </script>
 </body>
