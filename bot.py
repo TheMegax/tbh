@@ -5,8 +5,7 @@ import random
 from typing import Type
 
 import discord
-
-from discord import Bot, Option, Embed, Color, IntegrationType, GroupChannel, RawReactionActionEvent
+from discord import Bot, Option, Embed, Color, IntegrationType, GroupChannel, RawReactionActionEvent, Message
 from discord.abc import User
 from discord.ext.bridge import Context
 from discord.ext.commands import dm_only, PrivateMessageOnly
@@ -38,12 +37,22 @@ tbh_group.integration_types = {IntegrationType.user_install}
 
 @tbh_group.command(description=utils.localize("command.tbh.help"))
 async def help(ctx: Context) -> None:
+    """
+    Provides help information about the tbh commands.
+    :param ctx:
+    :return:
+    """
     await ctx.send_response(ephemeral=True, embed=Embed(title=utils.localize("embed.tbh.help.title"),
                                                         description=utils.localize("embed.tbh.help.description")))
 
 
 @inbox_group.command(description=utils.localize("command.inbox.enable.description"))
 async def enable(ctx: Context) -> None:
+    """
+    Enables the user's inbox to receive messages.
+    :param ctx:
+    :return:
+    """
     db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = True
     dbconnection.update_db_user(db_user)
@@ -54,6 +63,11 @@ async def enable(ctx: Context) -> None:
 
 @inbox_group.command(description=utils.localize("command.inbox.disable.description"))
 async def disable(ctx: Context) -> None:
+    """
+    Disables the user's inbox to stop receiving messages.
+    :param ctx:
+    :return:
+    """
     db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = False
     dbconnection.update_db_user(db_user)
@@ -65,6 +79,11 @@ async def disable(ctx: Context) -> None:
 @inbox_group.command(description=utils.localize("command.inbox.clear.description"))
 @dm_only()
 async def clear(ctx: Context) -> None:
+    """
+    Clears all messages sent by the bot in the user's DM inbox.
+    :param ctx:
+    :return:
+    """
     await ctx.defer(ephemeral=True)
     db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     user = await bot.get_or_fetch_user(db_user.user_id)
@@ -92,6 +111,12 @@ async def link(ctx: Context,
                              max_length=100
                              )
                ) -> None:
+    """
+    Generates a link to the user's inbox.
+    :param ctx:
+    :param title:
+    :return:
+    """
     await ctx.defer()
     db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = True
@@ -123,6 +148,13 @@ async def message(ctx: Context,
                               max_length=300
                               )
                   ) -> None:
+    """
+    Sends a message to the specified user through the bot.
+    :param ctx:
+    :param to:
+    :param msg:
+    :return:
+    """
     await ctx.defer(ephemeral=True)
     to: User = to
 
@@ -139,9 +171,7 @@ async def message(ctx: Context,
         utils.formatlog("Sending message {0}...".format(str(ctx.interaction.id)))
         img_name = utils.generate_message_image(inbox_title=db_target.inbox_title,
                                                 msg=msg, img_id=ctx.interaction.id)
-        sent_msg = await target_usr.send(file=discord.File(img_name))
-        await sent_msg.add_reaction("❌")
-        await sent_msg.add_reaction("❔")
+        sent_msg = await prepare_and_send_message(target_usr, img_name)
 
         if ctx.guild_id:
             origin = dbconnection.origins[1]
@@ -168,6 +198,12 @@ async def message(ctx: Context,
 
 @bot.event
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    """
+    Handles errors that occur during command execution.
+    :param ctx:
+    :param error:
+    :return:
+    """
     if error.args[0].__contains__('(error code: 50007)'):
         await ctx.respond(ephemeral=True,
                           embed=Embed(title=utils.localize("error.title"),
@@ -188,21 +224,39 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 
 @bot.event
 async def on_ready() -> None:
+    """
+    Called when the bot is ready.
+    :return:
+    """
     print("BOT STARTED")
     utils.formatlog(f'{bot.user} has connected to Discord!')
 
 
 @bot.event
 async def on_connect() -> None:
+    """
+    Called when the bot connects to Discord.
+    :return:
+    """
     bot.loop.create_task(queue_listener())
 
 
 @bot.event
 async def on_raw_reaction_add(payload: RawReactionActionEvent) -> None:
+    """
+    Called when a reaction is added to a message.
+    :param payload:
+    :return:
+    """
     await handle_reactions(payload)
 
 
 async def handle_reactions(payload: RawReactionActionEvent) -> None:
+    """
+    Handles reactions added to messages sent by the bot.
+    :param payload:
+    :return:
+    """
     if payload.user_id == bot.user.id:
         return
     db_message = dbconnection.get_db_message(payload.message_id)
@@ -221,7 +275,11 @@ async def handle_reactions(payload: RawReactionActionEvent) -> None:
 message_queue = asyncio.Queue()
 
 
-async def queue_listener():
+async def queue_listener() -> None:
+    """
+    Listens for messages in the queue and sends them.
+    :return:
+    """
     while True:
         db_user_id, msg = await message_queue.get()
         to_user = dbconnection.get_or_create_db_user(db_user_id)
@@ -229,7 +287,13 @@ async def queue_listener():
         message_queue.task_done()
 
 
-async def send_message_from_web(to_user, msg):
+async def send_message_from_web(to_user, msg) -> None:
+    """
+    Sends a message to the specified user from the web interface.
+    :param to_user:
+    :param msg:
+    :return:
+    """
     target_usr = await bot.get_or_fetch_user(to_user.user_id)
     if target_usr is None or not to_user.is_inbox_open:
         utils.formatlog("Nope")
@@ -238,9 +302,7 @@ async def send_message_from_web(to_user, msg):
     utils.formatlog("Sending message from web...")
     img_name = utils.generate_message_image(inbox_title=to_user.inbox_title,
                                             msg=msg, img_id=rand_id)
-    sent_msg = await target_usr.send(file=discord.File(img_name))
-    await sent_msg.add_reaction("❌")
-    await sent_msg.add_reaction("❔")
+    sent_msg = await prepare_and_send_message(target_usr, img_name)
 
     origin = dbconnection.origins[4]
     dbconnection.create_db_message(sent_msg.id, origin)
@@ -250,5 +312,25 @@ async def send_message_from_web(to_user, msg):
     utils.formatlog("Message {0} sent!".format(str(sent_msg.id)))
 
 
-async def start_bot(token):
+async def prepare_and_send_message(target_usr, img_name: str) -> Message:
+    """
+    Prepares and sends a message to the target user with the given image.
+    :param target_usr:
+    :param img_name:
+    :return:
+    """
+    sent_msg = await target_usr.send(
+        content=utils.localize("embed.message.title").format(utils.localize("website.link"), target_usr.name),
+        file=discord.File(img_name))
+    await sent_msg.add_reaction("❌")
+    await sent_msg.add_reaction("❔")
+    return sent_msg
+
+
+async def start_bot(token) -> None:
+    """
+    Starts the bot with the given token.
+    :param token:
+    :return:
+    """
     await bot.start(token)

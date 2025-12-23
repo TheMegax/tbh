@@ -14,29 +14,50 @@ BROWSER_LOCATION: str = os.getenv('HTML2IMAGE_BROWSER_LOCATION')
 USE_HTML_JSON_SERVICE: bool = bool(int(os.getenv('USE_HTML_JSON_SERVICE', "0")))
 SERVICE_PORT: str = os.getenv('SERVICE_PORT')
 
-if USE_HTML_JSON_SERVICE:
-    import requests
-else:
-    from html2image import Html2Image
-
-    hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
-
 with open("localization/en-US.json") as f:
     localization: dict = json.load(f)
 
 
 def localize(key: str):
+    """
+    Retrieves the localized string for the given key.
+    If the key does not exist, it returns the key itself.
+    :param key:
+    :return:
+    """
     if key not in localization:
         return key
     return localization[key]
 
 
 def formatlog(msg: str):
+    """
+    Formats and prints a log message with a timestamp.
+    :param msg:
+    :return:
+    """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print("[{0}]    {1}".format(timestamp, msg))
 
 
+if USE_HTML_JSON_SERVICE:
+    import requests
+    formatlog("Using HTML to Image JSON service for rendering.")
+else:
+    from html2image import Html2Image
+    hti = Html2Image(disable_logging=True, browser=BROWSER, browser_executable=BROWSER_LOCATION)
+    formatlog("Using html2image library for rendering.")
+
+
 def generate_image(template_path: str, substitutions: dict, img_id: int) -> str:
+    """
+    Generates an image from an HTML template and substitutions.
+    Note: This does NOT check if the image was generated successfully.
+    :param template_path:
+    :param substitutions:
+    :param img_id:
+    :return:
+    """
     escaped_substitutions = {key: html.escape(value) for key, value in substitutions.items()}
 
     with open(template_path, "r") as file:
@@ -51,6 +72,12 @@ def generate_image(template_path: str, substitutions: dict, img_id: int) -> str:
 
 
 def generate_link_image(inbox_title: str, img_id: int) -> str:
+    """
+    Generates an image for the link preview.
+    :param inbox_title:
+    :param img_id:
+    :return:
+    """
     return generate_image(
         template_path="web/html-render/link.html",
         substitutions={"ask_title": inbox_title},
@@ -59,6 +86,13 @@ def generate_link_image(inbox_title: str, img_id: int) -> str:
 
 
 def generate_message_image(inbox_title: str, msg: str, img_id: int) -> str:
+    """
+    Generates an image for the inbox message.
+    :param inbox_title:
+    :param msg:
+    :param img_id:
+    :return:
+    """
     return generate_image(
         template_path="web/html-render/answer.html",
         substitutions={"ask_title": inbox_title, "ask_msg": msg},
@@ -67,6 +101,12 @@ def generate_message_image(inbox_title: str, msg: str, img_id: int) -> str:
 
 
 def screenshot_and_crop(html_str: str, save_as: str):
+    """
+    Takes a screenshot of the given HTML string and crops the result.
+    :param html_str:
+    :param save_as:
+    :return:
+    """
     if USE_HTML_JSON_SERVICE:
         json_data = {
             'html': html_str,
