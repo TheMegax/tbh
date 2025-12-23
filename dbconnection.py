@@ -62,6 +62,7 @@ def get_db_user_by_username(username: str) -> DBUser | None:
     results = session.exec(statement)
     for user in results:
         return user
+    return None
 
 
 def update_db_user(db_user: DBUser):
