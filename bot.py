@@ -251,9 +251,19 @@ async def on_raw_reaction_add(payload: RawReactionActionEvent) -> None:
     await handle_reactions(payload)
 
 
-async def handle_reactions(payload: RawReactionActionEvent) -> None:
+@bot.event
+async def on_raw_reaction_remove(payload: RawReactionActionEvent) -> None:
     """
-    Handles reactions added to messages sent by the bot.
+    Called when a reaction is removed from a message.
+    :param payload:
+    :return:
+    """
+    await handle_reactions(payload, True)
+
+
+async def handle_reactions(payload: RawReactionActionEvent, removing: bool = False) -> None:
+    """
+    Handles reactions added or removed to messages sent by the bot.
     :param payload:
     :return:
     """
@@ -266,10 +276,27 @@ async def handle_reactions(payload: RawReactionActionEvent) -> None:
         if payload.emoji.name == "❌":
             await msg.delete()
             dbconnection.delete_db_message(db_message.message_id)
-        elif payload.emoji.name == "❔":
+        elif payload.emoji.name == "❔" and not removing:
             embed = Embed(title=utils.localize("embed.see_origin.title"),
                           description=utils.localize(f"embed.see_origin.{db_message.origin}.description"))
             await msg.reply(embed=embed, delete_after=10)
+        elif payload.emoji.name == "👁️":
+            image = await msg.attachments[0].to_file()
+
+            if image.filename.startswith("SPOILER_"):
+                image.filename = image.filename[len("SPOILER_"):]
+            else:
+                image.filename = "SPOILER_" + image.filename
+
+            await msg.edit(file=image)
+            msg = await channel.fetch_message(payload.message_id)
+            edited_attachments = msg.attachments
+            edited_attachments.pop(0)
+            await msg.edit(attachments=edited_attachments)
+            if removing:
+                await msg.add_reaction("👁️")
+            else:
+                await msg.remove_reaction(payload.emoji, bot.user)
 
 
 message_queue = asyncio.Queue()
@@ -324,6 +351,7 @@ async def prepare_and_send_message(target_usr, img_name: str) -> Message:
         file=discord.File(img_name))
     await sent_msg.add_reaction("❌")
     await sent_msg.add_reaction("❔")
+    await sent_msg.add_reaction("👁️")
     return sent_msg
 
 
