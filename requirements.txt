@@ -1,10 +1,10 @@
-python-dotenv~=1.0.1
-py-cord~=2.6.1
+python-dotenv~=1.2.2
+py-cord~=2.7.1
 requests~=2.32.3
 html2image~=2.0.5
-pillow~=11.0.0
+pillow~=12.1.1
 Flask~=3.1.0
-Hypercorn~=0.17.3
+Hypercorn~=0.18.0
 sqlmodel~=0.0.22
-alembic~=1.14.0
+alembic~=1.18.4
 SQLAlchemy~=2.0.36
