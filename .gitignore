@@ -3,3 +3,5 @@
 /servers.db
 /.idea
 /database.db
+/__pycache__
+/migrations/__pycache__
