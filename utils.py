@@ -1,7 +1,7 @@
 import os
 from string import Template
 
-from PIL import Image
+from PIL import Image, ImageChops
 from dotenv import load_dotenv
 
 import html
@@ -58,7 +58,10 @@ def generate_image(template_path: str, substitutions: dict, img_id: int) -> str:
     :param img_id:
     :return:
     """
-    escaped_substitutions = {key: html.escape(value) for key, value in substitutions.items()}
+    escaped_substitutions = {
+        key: value if key.endswith('_html') else html.escape(str(value)).replace('\n', '<br>')
+        for key, value in substitutions.items()
+    }
 
     with open(template_path, "r") as file:
         data = file.read()
@@ -85,17 +88,24 @@ def generate_link_image(inbox_title: str, img_id: int) -> str:
     )
 
 
-def generate_message_image(inbox_title: str, msg: str, img_id: int) -> str:
+def generate_message_image(inbox_title: str, msg: str, img_id: int, images_enabled: bool = False, image_data: str = None) -> str:
     """
     Generates an image for the inbox message.
     :param inbox_title:
     :param msg:
     :param img_id:
+    :param images_enabled:
+    :param image_data:
     :return:
     """
     return generate_image(
         template_path="web/html-render/answer.html",
-        substitutions={"ask_title": inbox_title, "ask_msg": msg},
+        substitutions={
+            "ask_title": inbox_title, 
+            "ask_msg": msg, 
+            "images_enabled": "True" if images_enabled else "False",
+            "attached_image_html": f'<hr style="border: 0; border-top: 4px solid rgba(0,0,0,0.1); width: 90%; margin: 10px 0;"><img src="{image_data}" class="embedded-image" />' if image_data and images_enabled else ""
+        },
         img_id=img_id
     )
 
@@ -119,12 +129,21 @@ def screenshot_and_crop(html_str: str, save_as: str):
         with open(save_as, 'wb') as img:
             img.write(response.content)
     else:
-        hti.screenshot(html_str=html_str, save_as=save_as)
-    im = Image.open(save_as)
-    width, height = im.size
-    p1_x = 300
-    p1_y = 50
-    p2_x = width - 300
-    p2_y = height - 50
-
-    im.crop((p1_x, p1_y, p2_x, p2_y)).save(save_as)
+        hti.screenshot(html_str=html_str, save_as=save_as, size=(1920, 4000))
+        
+    im_rgb = Image.open(save_as).convert('RGB')
+    bg = Image.new('RGB', im_rgb.size, (228, 228, 255))
+    diff = ImageChops.difference(im_rgb, bg)
+    bbox = diff.getbbox()
+    
+    if bbox:
+        padding_y = 60
+        padding_x = 80
+        left, upper, right, lower = bbox
+        left = max(0, left - padding_x)
+        upper = max(0, upper - padding_y)
+        right = min(im_rgb.width, right + padding_x)
+        lower = min(im_rgb.height, lower + padding_y)
+        
+        im_original = Image.open(save_as)
+        im_original.crop((left, upper, right, lower)).save(save_as)

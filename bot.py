@@ -109,17 +109,24 @@ async def link(ctx: Context,
                              description=utils.localize("command.link.title"),
                              required=False,
                              max_length=100
-                             )
+                             ),
+               images_enabled: Option(bool, input_type=Type[bool],
+                                      description=utils.localize("command.link.images"),
+                                      required=False,
+                                      default=False
+                                      )
                ) -> None:
     """
     Generates a link to the user's inbox.
     :param ctx:
     :param title:
+    :param images_enabled:
     :return:
     """
     await ctx.defer()
     db_user = dbconnection.get_or_create_db_user(ctx.user.id, ctx.user)
     db_user.is_inbox_open = True
+    db_user.images_enabled = images_enabled
     if title is None:
         title = db_user.inbox_title
     else:
@@ -169,8 +176,12 @@ async def message(ctx: Context,
                             description=utils.localize("error.inbox_closed").format(target_usr.display_name)))
             return
         utils.formatlog("Sending message {0}...".format(str(ctx.interaction.id)))
+        # TODO: Figure out if it's possible to upload images in discord commands
         img_name = utils.generate_message_image(inbox_title=db_target.inbox_title,
-                                                msg=msg, img_id=ctx.interaction.id)
+                                                msg=msg, img_id=ctx.interaction.id, 
+                                                images_enabled=db_target.images_enabled,
+                                                image_data=None)
+        
         sent_msg = await prepare_and_send_message(target_usr, img_name)
 
         if ctx.guild_id:
@@ -238,6 +249,8 @@ async def on_connect() -> None:
     Called when the bot connects to Discord.
     :return:
     """
+    if bot.auto_sync_commands:
+        await bot.sync_commands()
     bot.loop.create_task(queue_listener())
 
 
@@ -265,6 +278,7 @@ async def handle_reactions(payload: RawReactionActionEvent, removing: bool = Fal
     """
     Handles reactions added or removed to messages sent by the bot.
     :param payload:
+    :param removing:
     :return:
     """
     if payload.user_id == bot.user.id:
@@ -308,17 +322,18 @@ async def queue_listener() -> None:
     :return:
     """
     while True:
-        db_user_id, msg = await message_queue.get()
+        db_user_id, msg, image_data = await message_queue.get()
         to_user = dbconnection.get_or_create_db_user(db_user_id)
-        await send_message_from_web(to_user, msg)
+        await send_message_from_web(to_user, msg, image_data)
         message_queue.task_done()
 
 
-async def send_message_from_web(to_user, msg) -> None:
+async def send_message_from_web(to_user: dbconnection.DBUser, msg: str, image_data: str = None) -> None:
     """
     Sends a message to the specified user from the web interface.
     :param to_user:
     :param msg:
+    :param image_data:
     :return:
     """
     target_usr = await bot.get_or_fetch_user(to_user.user_id)
@@ -328,7 +343,9 @@ async def send_message_from_web(to_user, msg) -> None:
     rand_id = random.randint(100000000000, 999999999999)
     utils.formatlog("Sending message from web...")
     img_name = utils.generate_message_image(inbox_title=to_user.inbox_title,
-                                            msg=msg, img_id=rand_id)
+                                            msg=msg, img_id=rand_id,
+                                            images_enabled=to_user.images_enabled,
+                                            image_data=image_data)
     sent_msg = await prepare_and_send_message(target_usr, img_name)
 
     origin = dbconnection.origins[4]

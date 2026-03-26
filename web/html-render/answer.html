@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,17 +12,28 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 1080px;
+            min-height: 1080px;
             width: 1920px;
             background-color: #e4e4ff;
+            padding: 50px;
+            box-sizing: border-box;
         }
+
         .card {
-            width: 1200px;
+            width: 1600px;
+            min-width: 1600px;
+            max-width: 1600px;
+            height: auto;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
             border-radius: 60px;
             overflow: hidden;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             background-color: white;
+            box-sizing: border-box;
         }
+
         .header {
             background: linear-gradient(to right, #A100FFFF, #71C4FFFF);
             color: white;
@@ -30,23 +42,64 @@
             font-size: 72px;
             font-weight: bold;
             overflow-wrap: break-word;
+            flex-shrink: 0;
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
+
         .content {
-            padding: 90px 60px;
+            padding: 60px;
             text-align: center;
             color: #000;
             font-size: 60px;
             font-weight: bold;
             overflow-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        img.emoji {
+            height: 1em;
+            width: 1em;
+            margin: 0 .05em 0 .1em;
+            vertical-align: -0.1em;
+        }
+
+        .embedded-image {
+            width: 100%;
+            max-height: 800px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-height: 0;
+            flex-shrink: 1;
         }
     </style>
+    <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
     <div class="card">
         <div class="header">$ask_title</div>
-        <div class="content">
-            $ask_msg
+        <div class="content" id="contentDiv">
+            <div>$ask_msg</div>
+            $attached_image_html
         </div>
     </div>
+    <script>
+        twemoji.parse(document.body);
+    </script>
 </body>
+
 </html>
