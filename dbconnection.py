@@ -18,6 +18,7 @@ class DBUser(SQLModel, table=True):
     avatar_url: Optional[str] = Field(default="")
     is_inbox_open: Optional[bool] = Field(default=False)
     inbox_title: Optional[str] = Field(default=utils.localize("template.default_inbox_title"))
+    images_enabled: Optional[bool] = Field(default=False)
 
 
 class DBMessage(SQLModel, table=True):

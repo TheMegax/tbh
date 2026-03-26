@@ -54,13 +54,13 @@ def not_found(_e=None):
     return render_template("not_found_page.html", flavor_text=flavor_text)
 
 
-@app.route('/<username>', methods=['GET'])
+@app.route('/<username>', methods=['GET', 'POST'])
 def send_page(username: str):
     """
     Renders the send message page for the given username.
     404 if the user does not exist.
     If the user's inbox is closed, shows a disabled page.
-    If a message is provided in the query parameters, sends the message and redirects to the sent page.
+    If a message or image is provided, sends the message/image and redirects to the sent page.
     :param username:
     :return:
     """
@@ -74,13 +74,30 @@ def send_page(username: str):
         disabled_description = utils.localize("website.disabled_page.description")
         return render_template("disabled_page.html", disabled_title=disabled_title,
                                disabled_header=disabled_header, disabled_description=disabled_description)
-    message = request.args.get('message', type=str)
-    if message:
-        send_message(db_user, message)
-        return redirect(url_for('sent_page', username=username))
+    if request.method == 'POST':
+        message = request.form.get('message', type=str) or ""
+        image_data = None
+        if db_user.images_enabled:
+            image_file = request.files.get('image')
+            if image_file and image_file.filename:
+                import base64
+                image_bytes = image_file.read()
+                b64_str = base64.b64encode(image_bytes).decode('utf-8')
+                mime_type = image_file.mimetype if image_file.mimetype else 'image/png'
+                image_data = f"data:{mime_type};base64,{b64_str}"
+        if message or image_data:
+            send_message(db_user, message, image_data)
+            return redirect(url_for('sent_page', username=username))
+    else:
+        message = request.args.get('message', type=str)
+        if message:
+            send_message(db_user, message)
+            return redirect(url_for('sent_page', username=username))
+
     return render_template(
         "send_page.html", username=username, inbox_title=db_user.inbox_title,
-        user_avatar=db_user.avatar_url, placeholder=utils.localize("website.send_page.placeholder"))
+        user_avatar=db_user.avatar_url, placeholder=utils.localize("website.send_page.placeholder"),
+        images_enabled=db_user.images_enabled)
 
 
 @app.route('/sent', methods=['GET'])
@@ -124,11 +141,12 @@ async def run_website():
     await serve(app, config)
 
 
-def send_message(to_user: DBUser, message: str) -> None:
+def send_message(to_user: DBUser, message: str, image_data: str = None) -> None:
     """
     Sends a message to the given user by putting it in the bot's message queue.
     :param to_user:
     :param message:
+    :param image_data:
     :return:
     """
-    asyncio.run_coroutine_threadsafe(message_queue.put((to_user.user_id, message)), bot.bot.loop)
+    asyncio.run_coroutine_threadsafe(message_queue.put((to_user.user_id, message, image_data)), bot.bot.loop)

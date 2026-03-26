@@ -5,6 +5,7 @@
   "command.send.message.msg": "Message to send.",
   "command.link.description": "Let people know your inbox is open.",
   "command.link.title": "A custom title for your inbox.",
+  "command.link.images": "Whether to allow people to send images to your inbox.",
   "command.inbox.description": "Enable or disable your inbox.",
   "command.inbox.enable.description": "Enable your inbox.",
   "command.inbox.disable.description": "Disable your inbox.",
