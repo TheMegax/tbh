@@ -20,7 +20,6 @@ TOKEN: str = os.getenv('DISCORD_TOKEN')
 # TODO(s)
 #  Discord markdown for text (minus titles)
 #  Emoji support
-#   - Regular emojis
 #   - Discord emojis
 #  Customizable title gradient colors
 
@@ -133,7 +132,11 @@ async def link(ctx: Context,
         db_user.inbox_title = title
     dbconnection.update_db_user(db_user)
     utils.formatlog("Generating link {0}...".format(str(ctx.interaction.id)))
-    img_name = utils.generate_link_image(inbox_title=title, img_id=ctx.interaction.id)
+    img_name = await asyncio.to_thread(
+        utils.generate_link_image,
+        inbox_title=title,
+        img_id=ctx.interaction.id
+    )
     embed = Embed(title=utils.localize("embed.link.title").format(ctx.user.display_name),
                   description=utils.localize("embed.link.description")
                   .format(utils.localize("website.link"), db_user.username, utils.localize("template.app_link")))
@@ -177,10 +180,13 @@ async def message(ctx: Context,
             return
         utils.formatlog("Sending message {0}...".format(str(ctx.interaction.id)))
         # TODO: Figure out if it's possible to upload images in discord commands
-        img_name = utils.generate_message_image(inbox_title=db_target.inbox_title,
-                                                msg=msg, img_id=ctx.interaction.id, 
-                                                images_enabled=db_target.images_enabled,
-                                                image_data=None)
+        img_name = await asyncio.to_thread(
+            utils.generate_message_image,
+            inbox_title=db_target.inbox_title,
+            msg=msg,
+            img_id=ctx.interaction.id, 
+            image_data=None
+        )
         
         sent_msg = await prepare_and_send_message(target_usr, img_name)
 
@@ -338,14 +344,21 @@ async def send_message_from_web(to_user: dbconnection.DBUser, msg: str, image_da
     """
     target_usr = await bot.get_or_fetch_user(to_user.user_id)
     if target_usr is None or not to_user.is_inbox_open:
-        utils.formatlog("Nope")
+        utils.formatlog("Tried to send message to user but their inbox is closed or they don't exist.")
         return
+    if not to_user.images_enabled and image_data is not None:
+        utils.formatlog("Message includes an image, but the user's inbox has images disabled. Message will be "
+                        "sent without the image.")
+        image_data = None
     rand_id = random.randint(100000000000, 999999999999)
     utils.formatlog("Sending message from web...")
-    img_name = utils.generate_message_image(inbox_title=to_user.inbox_title,
-                                            msg=msg, img_id=rand_id,
-                                            images_enabled=to_user.images_enabled,
-                                            image_data=image_data)
+    img_name = await asyncio.to_thread(
+        utils.generate_message_image,
+        inbox_title=to_user.inbox_title,
+        msg=msg,
+        img_id=rand_id,
+        image_data=image_data
+    )
     sent_msg = await prepare_and_send_message(target_usr, img_name)
 
     origin = dbconnection.origins[4]

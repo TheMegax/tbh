@@ -135,10 +135,14 @@ async def run_website():
     """
     from hypercorn.asyncio import serve
     from hypercorn.config import Config
+    from a2wsgi import WSGIMiddleware
 
     config = Config()
     config.bind = [f"localhost:{WEBSITE_PORT}"]
-    await serve(app, config)
+    
+    # Wrap the Flask WSGI app with an ASGI middleware
+    asgi_app = WSGIMiddleware(app)
+    await serve(asgi_app, config)
 
 
 def send_message(to_user: DBUser, message: str, image_data: str = None) -> None:
