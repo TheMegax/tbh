@@ -1,6 +1,6 @@
 {
   "command.send.description": "Send something!",
-  "command.send.message.description" : "Sends an anonymous message to an user.",
+  "command.send.message.description": "Sends an anonymous message to an user.",
   "command.send.message.to": "Send to who? (Must be in the member list)",
   "command.send.message.msg": "Message to send.",
   "command.link.description": "Let people know your inbox is open.",
