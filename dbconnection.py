@@ -102,26 +102,4 @@ def delete_db_message(message_id: int) -> bool:
 # <<< DATABASE >>> #
 def initialize_database() -> None:
     SQLModel.metadata.create_all(engine)
-    migrate_to_sqlmodel()
 
-
-def migrate_to_sqlmodel() -> None:
-    old_db = Path("servers.db")
-    if old_db.is_file():
-        with sqlite3.connect('servers.db') as conn:
-            cursor = conn.cursor()
-
-            cursor.execute("SELECT * FROM users")
-            data = cursor.fetchall()
-            for user in data:
-                db_user = get_or_create_db_user(user_id=user[0])
-                db_user.is_inbox_open = user[1]
-                db_user.inbox_title = user[2]
-                update_db_user(db_user)
-
-            cursor.execute("SELECT * FROM asks")
-            data = cursor.fetchall()
-            for message in data:
-                create_db_message(message_id=message[0], origin=message[1])
-
-        old_db.unlink()
